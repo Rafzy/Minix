@@ -1,6 +1,8 @@
 #include "opcode.hpp"
 #include "utils.hpp"
 #include <cstdint>
+#include <iomanip>
+#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -65,12 +67,11 @@ int main(int argc, char *argv[]) {
   header Header;
   Header.a_text = le_32(buffer, 8);
 
-  int offset = 0;
-  for (int i = 32; i < Header.a_text + 32; i++) {
-    switch (buffer[i]) { analyze_opcode(buffer[i]); }
-  }
-
-  analyze_opcode(0xb0);
+  // int offset = 0;
+  // for (int i = 32; i < Header.a_text + 32; i++) {
+  //   analyze_opcode(buffer, i);
+  // }
+  analyze_opcode(buffer, 32);
 
   free(buffer);
 

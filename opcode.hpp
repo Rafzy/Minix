@@ -7,18 +7,13 @@
 
 using namespace std;
 
-typedef enum {
-  FORMAT_UNKNOWN = 0,
-  FORMAT_MODRM_8,
-  FORMAT_MODRM_16,
-  FORMAT_REG_IMM_8,
-  FORMAT_REG_IMM_16
-} format_type;
-
 typedef struct {
   string mnemonic;
-  int min_length;
+  string op1;
+  string op2;
+  string op3;
+  string op4;
 } instruction_info;
 
-void analyze_opcode(uint8_t byte);
+int analyze_opcode(uint8_t *byte, int offset);
 #endif // !OCODE_H
