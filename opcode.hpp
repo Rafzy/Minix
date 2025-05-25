@@ -2,7 +2,6 @@
 #define OPCODE_HPP
 
 #include <cstdint>
-#include <iostream>
 #include <string>
 
 using namespace std;
