@@ -4,7 +4,7 @@
 #include <string>
 using namespace std;
 
-extern string reg_1[];
-extern string reg_0[];
+extern string reg_table[][8];
+extern string rm_table[];
 
 #endif // !REGISTERS_HPP

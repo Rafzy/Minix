@@ -22,7 +22,7 @@ int analyze_opcode(uint8_t *byte, int offset) {
   case 0x57: {
     result_info.mnemonic = "push";
     uint8_t reg = byte[offset] - 0x50;
-    string reg_name = reg_1[reg];
+    string reg_name = reg_table[1][reg];
     cout << result_info.mnemonic << " ";
     cout << reg_name;
     break;
@@ -42,7 +42,7 @@ int analyze_opcode(uint8_t *byte, int offset) {
   case 0xb7: {
     result_info.mnemonic = "MOV";
     uint8_t reg = byte[offset] - 0xb0;
-    string reg_name = reg_0[reg];
+    string reg_name = reg_table[1][reg];
     uint16_t imm_value = byte[offset + 1];
     cout << result_info.mnemonic << '\n';
     cout << reg_name << '\n';
@@ -59,7 +59,7 @@ int analyze_opcode(uint8_t *byte, int offset) {
   case 0xbf: {
     result_info.mnemonic = "mov";
     uint8_t reg = byte[offset] - 0xb8;
-    string reg_name = reg_1[reg];
+    string reg_name = reg_table[1][reg];
     uint16_t imm_value = le_16(byte, offset + 1);
     cout << result_info.mnemonic << ' ';
     cout << reg_name << ' ';
