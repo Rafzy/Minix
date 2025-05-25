@@ -1,11 +1,26 @@
+#include "opcode.hpp"
+#include "utils.hpp"
 #include <cstdint>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
 
-void extract_bytes(uint8_t byte) {
+using namespace std;
 
-};
+typedef struct {
+  uint16_t a_magic;
+  uint8_t a_flags;
+  uint8_t a_cpu;
+  uint8_t a_hdrlen;
+  uint8_t a_unused;
+  uint8_t a_version;
+  uint32_t a_text;
+  uint32_t a_data;
+  uint32_t a_bss;
+  uint32_t a_entry;
+  uint32_t a_total;
+  uint32_t a_syms;
+} header;
 
 int main(int argc, char *argv[]) {
   FILE *file;
@@ -47,61 +62,15 @@ int main(int argc, char *argv[]) {
 
   fclose(file);
 
-  uint32_t full_ptr = 0;
-  for (int i = 11; i > 7; i--) {
-    full_ptr = full_ptr << 8 | buffer[i];
-  }
+  header Header;
+  Header.a_text = le_32(buffer, 8);
 
   int offset = 0;
-
-  printf("%x", full_ptr);
-
-  for (int i = 32; i < full_ptr + 32; i++) {
-    switch (buffer[i]) {
-    case 0xb8:
-    case 0xb9:
-    case 0xba:
-    case 0xbb:
-    case 0xbc:
-    case 0xbd:
-    case 0xbe:
-    case 0xbf: {
-      // printf("%04x: ", offset);
-      // printf("%02x%02x%02x", buffer[i], buffer[i + 1], buffer[i + 2]);
-      // printf("%15s, %02x%02x\n", "mov bx", buffer[i + 2], buffer[i + 1]);
-      uint32_t test;
-      test = buffer[i + 2] << 16 | buffer[i + 1] << 8 | buffer[i];
-      uint32_t check_w = 0x100;
-      uint32_t check_d = 0x200;
-      if ((test & check_d) == 0x200) {
-        printf("d = 1");
-      }
-      if ((test & check_w) == 0x100) {
-        printf("w = 1");
-      }
-
-      i += 2;
-      offset += 3;
-      break;
-    }
-    case 0xcd: {
-      printf("%04x: ", offset);
-      printf("%02x%02x", buffer[i], buffer[i + 1]);
-      printf("%14s %02x\n", "int", buffer[i + 1]);
-      i += 1;
-      offset += 2;
-      break;
-    }
-    case 0x00: {
-      printf("%04x: ", offset);
-      printf("%02x%02x", buffer[i], buffer[i + 1]);
-      printf("%28s\n", "add [bx + si], al");
-      i += 1;
-      offset += 2;
-      break;
-    }
-    }
+  for (int i = 32; i < Header.a_text + 32; i++) {
+    switch (buffer[i]) { analyze_opcode(buffer[i]); }
   }
+
+  analyze_opcode(0xb0);
 
   free(buffer);
 
