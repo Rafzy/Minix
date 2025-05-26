@@ -57,3 +57,19 @@ void parse_reg16_end(instruction_info *info, uint8_t *byte, int offset) {
   uint8_t reg = opcode - 0x50;
   info->op1 = reg_table[1][reg];
 }
+
+void parse_reg_imm(instruction_info *info, uint8_t *byte, int offset) {
+  uint8_t opcode = byte[offset];
+  uint8_t reg = (opcode & 0x07);
+  uint8_t w = (opcode & 0x08) >> 3;
+  string reg_name = reg_table[w][reg];
+  uint16_t imm;
+  if (w == 0x01) {
+    imm = le_16(byte, offset + 1);
+    info->length += 1;
+  } else {
+    imm = byte[offset + 1];
+  }
+  info->op1 = reg_name;
+  info->op2 = imm;
+}

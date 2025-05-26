@@ -50,8 +50,9 @@ int analyze_opcode(uint8_t *byte, int offset) {
   case 0xb6:
   case 0xb7: {
     result_info.mnemonic = "mov";
+    result_info.length = 2;
     uint8_t reg = byte[offset] - 0xb0;
-    string reg_name = reg_table[1][reg];
+    string reg_name = reg_table[0][reg];
     uint16_t imm_value = byte[offset + 1];
     result_info.op1 = reg_name;
     result_info.op2 = imm_value;
