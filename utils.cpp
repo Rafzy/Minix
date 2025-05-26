@@ -35,11 +35,12 @@ void parse_mod_reg_rm16(instruction_info *info, uint8_t *byte, int offset) {
     // typecast int_8 for sign extension
     int8_t disp = (int8_t)byte[offset + 2];
     string se_disp = sign_extend(disp);
-    rm_name = rm_table[rm] + (disp >= 0 ? " + " : " - ") + se_disp;
+    rm_name = rm_table[rm] + (disp >= 0 ? " + " : " - ") + se_disp + ']';
 
   } else if (mod == 0x02) {
     int16_t disp = (int8_t)le_16(byte, offset + 2);
-    string rm_name = rm_table[rm] + " + " + to_string(disp);
+    // FIXME
+    string rm_name = rm_table[rm] + " + " + to_string(disp) + ']';
   } else if (mod == 0x00) {
     rm_name = rm_table[rm];
   }
