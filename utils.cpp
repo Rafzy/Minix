@@ -21,7 +21,7 @@ string sign_extend(int16_t val) {
   return stream.str();
 }
 
-void parse_reg_rm16(instruction_info *info, uint8_t *byte, int offset) {
+void parse_mod_reg_rm16(instruction_info *info, uint8_t *byte, int offset) {
   uint8_t opcode = byte[offset];
   uint8_t operand = byte[offset + 1];
   uint8_t mod = (operand & 0xc0) >> 6;
@@ -51,3 +51,9 @@ void parse_reg_rm16(instruction_info *info, uint8_t *byte, int offset) {
     info->op2 = reg_name;
   }
 };
+
+void parse_reg16_end(instruction_info *info, uint8_t *byte, int offset) {
+  uint8_t opcode = byte[offset];
+  uint8_t reg = opcode - 0x50;
+  info->op1 = reg_table[1][reg];
+}

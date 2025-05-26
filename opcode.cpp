@@ -9,6 +9,10 @@
 
 using namespace std;
 
+void print_result(instruction_info info) {
+  // TODO
+}
+
 int analyze_opcode(uint8_t *byte, int offset) {
   instruction_info result_info;
   switch (byte[offset]) {
@@ -21,9 +25,8 @@ int analyze_opcode(uint8_t *byte, int offset) {
   case 0x56:
   case 0x57: {
     result_info.mnemonic = "push";
-    uint8_t reg = byte[offset] - 0x50;
-    string reg_name = reg_table[1][reg];
-    result_info.op1 = reg_name;
+    result_info.length = 1;
+    parse_reg16_end(&result_info, byte, offset);
     cout << result_info.mnemonic << ", ";
     cout << result_info.op1 << "\n";
     break;
@@ -31,7 +34,8 @@ int analyze_opcode(uint8_t *byte, int offset) {
 
   case 0x89: {
     result_info.mnemonic = "mov";
-    parse_reg_rm16(&result_info, byte, offset);
+    result_info.length = 2;
+    parse_mod_reg_rm16(&result_info, byte, offset);
     cout << result_info.mnemonic << ", " << result_info.op1 << ", "
          << result_info.op2 << "\n";
     break;

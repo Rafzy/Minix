@@ -12,6 +12,7 @@ typedef struct {
   string op2;
   string op3;
   string op4;
+  int length;
 } instruction_info;
 
 int analyze_opcode(uint8_t *byte, int offset);
