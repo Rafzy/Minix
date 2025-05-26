@@ -75,15 +75,16 @@ int analyze_opcode(uint8_t *byte, int offset) {
     uint16_t imm_value = le_16(byte, offset + 1);
     result_info.op1 = reg_name;
     result_info.op2 = imm_value;
+    cout << hex << imm_value;
     cout << result_info.mnemonic << ", ";
     cout << result_info.op1 << ", ";
-    cout << setfill('0') << setw(4) << hex << result_info.op2 << '\n';
+    cout << setfill('0') << setw(4) << result_info.op2 << '\n';
     break;
   }
   case 0xcd: {
     result_info.mnemonic = "int";
     uint8_t imm_value = byte[offset + 1];
-    cout << result_info.mnemonic << ", " << (int)imm_value << "\n";
+    cout << result_info.mnemonic << " " << hex << (int)imm_value << "\n";
     break;
   }
   }
