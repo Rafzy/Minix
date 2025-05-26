@@ -32,11 +32,14 @@ int analyze_opcode(uint8_t *byte, int offset) {
     break;
   }
 
-  case 0x89: {
+  case 0x88:
+  case 0x89:
+  case 0x8A:
+  case 0x8B: {
     result_info.mnemonic = "mov";
     result_info.length = 2;
     parse_mod_reg_rm16(&result_info, byte, offset);
-    cout << result_info.mnemonic << ", " << result_info.op1 << ", "
+    cout << result_info.mnemonic << " " << result_info.op1 << ", "
          << result_info.op2 << "\n";
     break;
   }
@@ -48,19 +51,7 @@ int analyze_opcode(uint8_t *byte, int offset) {
   case 0xb4:
   case 0xb5:
   case 0xb6:
-  case 0xb7: {
-    result_info.mnemonic = "mov";
-    result_info.length = 2;
-    uint8_t reg = byte[offset] - 0xb0;
-    string reg_name = reg_table[0][reg];
-    uint16_t imm_value = byte[offset + 1];
-    result_info.op1 = reg_name;
-    result_info.op2 = imm_value;
-    cout << result_info.mnemonic << '\n';
-    cout << reg_name << '\n';
-    cout << setfill('0') << setw(4) << hex << imm_value;
-    break;
-  }
+  case 0xb7:
   case 0xb8:
   case 0xb9:
   case 0xba:
@@ -70,21 +61,18 @@ int analyze_opcode(uint8_t *byte, int offset) {
   case 0xbe:
   case 0xbf: {
     result_info.mnemonic = "mov";
-    uint8_t reg = byte[offset] - 0xb8;
-    string reg_name = reg_table[1][reg];
-    uint16_t imm_value = le_16(byte, offset + 1);
-    result_info.op1 = reg_name;
-    result_info.op2 = imm_value;
-    cout << hex << imm_value;
-    cout << result_info.mnemonic << ", ";
+    result_info.length = 2;
+    parse_reg_imm(&result_info, byte, offset);
+    cout << result_info.mnemonic << " ";
     cout << result_info.op1 << ", ";
-    cout << setfill('0') << setw(4) << result_info.op2 << '\n';
+    cout << result_info.op2 << '\n';
     break;
   }
   case 0xcd: {
     result_info.mnemonic = "int";
     uint8_t imm_value = byte[offset + 1];
     cout << result_info.mnemonic << " " << hex << (int)imm_value << "\n";
+    cout << "Test";
     break;
   }
   }
