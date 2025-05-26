@@ -35,14 +35,16 @@ void parse_mod_reg_rm16(instruction_info *info, uint8_t *byte, int offset) {
     // typecast int_8 for sign extension
     int8_t disp = (int8_t)byte[offset + 2];
     string se_disp = sign_extend(disp);
-    rm_name = rm_table[rm] + (disp >= 0 ? " + " : " - ") + se_disp + ']';
+    rm_name = rm_table[rm] + (disp >= 0 ? " + " : " - ") + se_disp + "]";
 
   } else if (mod == 0x02) {
-    int16_t disp = (int8_t)le_16(byte, offset + 2);
+    uint16_t disp = le_16(byte, offset + 2);
     // FIXME
-    string rm_name = rm_table[rm] + " + " + to_string(disp) + ']';
+    std::stringstream stream;
+    stream << setfill('0') << setw(4) << hex << disp;
+    string rm_name = rm_table[rm] + " + " + stream.str() + "]";
   } else if (mod == 0x00) {
-    rm_name = rm_table[rm];
+    rm_name = rm_table[rm] + "]";
   }
 
   if ((opcode & 0x02) == 0x02) {
@@ -73,8 +75,7 @@ void parse_reg_imm(instruction_info *info, uint8_t *byte, int offset) {
     imm = byte[offset + 1];
   }
   info->op1 = reg_name;
-std:
-  stringstream stream;
+  std::stringstream stream;
   stream << setfill('0') << setw(4) << hex << imm;
   info->op2 = stream.str();
 }
