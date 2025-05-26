@@ -72,6 +72,7 @@ int analyze_opcode(uint8_t *byte, int offset) {
     result_info.mnemonic = "int";
     uint8_t imm_value = byte[offset + 1];
     cout << result_info.mnemonic << " " << hex << (int)imm_value << "\n";
+    cout << "Test";
     break;
   }
   }
