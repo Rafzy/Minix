@@ -32,11 +32,14 @@ int analyze_opcode(uint8_t *byte, int offset) {
     break;
   }
 
-  case 0x89: {
+  case 0x88:
+  case 0x89:
+  case 0x8A:
+  case 0x8B: {
     result_info.mnemonic = "mov";
     result_info.length = 2;
     parse_mod_reg_rm16(&result_info, byte, offset);
-    cout << result_info.mnemonic << ", " << result_info.op1 << ", "
+    cout << result_info.mnemonic << " " << result_info.op1 << ", "
          << result_info.op2 << "\n";
     break;
   }
@@ -62,7 +65,7 @@ int analyze_opcode(uint8_t *byte, int offset) {
     parse_reg_imm(&result_info, byte, offset);
     cout << result_info.mnemonic << " ";
     cout << result_info.op1 << ", ";
-    cout << setfill('0') << setw(4) << result_info.op2 << '\n';
+    cout << result_info.op2 << '\n';
     break;
   }
   case 0xcd: {
