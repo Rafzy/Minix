@@ -1,9 +1,7 @@
 #include "opcode.hpp"
-#include "registers.hpp"
 #include "utils.hpp"
 #include <cstdint>
 
-#include <iomanip>
 #include <iostream>
 #include <string>
 
