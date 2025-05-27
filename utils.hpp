@@ -11,4 +11,5 @@ uint16_t le_16(uint8_t *bytes, int offset);
 void parse_mod_reg_rm16(instruction_info *info, uint8_t *byte, int offset);
 void parse_reg16_end(instruction_info *info, uint8_t *byte, int offset);
 void parse_reg_imm(instruction_info *info, uint8_t *byte, int offset);
+void parse_dir_w_seg(instruction_info *info, uint8_t *byte, int offset);
 #endif // !UTILS_H

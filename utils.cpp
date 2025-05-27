@@ -87,3 +87,7 @@ void parse_reg_imm(instruction_info *info, uint8_t *byte, int offset) {
   // stream << setfill('0') << setw(4) << hex << imm;
   info->op2 = print_hex(imm);
 }
+
+void parse_dir_w_seg(instruction_info *info, uint8_t *byte, int offset) {
+  uint16_t disp = le_16(byte, offset + 1);
+}

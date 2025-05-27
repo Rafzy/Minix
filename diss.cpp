@@ -65,11 +65,9 @@ int main(int argc, char *argv[]) {
   header Header;
   Header.a_text = le_32(buffer, 8);
 
-  int offset;
-  for (offset = 0; offset < Header.a_text; offset++) {
-    analyze_opcode(buffer, offset + 32);
+  for (int i = 32; i < Header.a_text + 32; i++) {
+    analyze_opcode(buffer, i);
   }
-  // analyze_opcode(buffer, 32);
 
   free(buffer);
 
