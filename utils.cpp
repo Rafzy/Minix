@@ -23,11 +23,12 @@ string sign_extend(int16_t val) {
 
 string print_hex(int16_t val) {
   std::stringstream stream;
-  stream << std::hex << val;
+  stream << setfill('0') << setw(4) << std::hex << val;
   return stream.str();
 }
 
-void parse_mod_reg_rm16(instruction_info *info, uint8_t *byte, int offset) {
+void parse_mod_reg_rm(instruction_info *info, uint8_t *byte, int offset) {
+  info->length = 2;
   uint8_t opcode = byte[offset];
   uint8_t operand = byte[offset + 1];
   uint8_t mod = (operand & 0xc0) >> 6;
@@ -43,14 +44,17 @@ void parse_mod_reg_rm16(instruction_info *info, uint8_t *byte, int offset) {
     // string se_disp = print_hex(abs(disp));
     rm_name =
         rm_table[rm] + (disp >= 0 ? " + " : " - ") + print_hex(abs(disp)) + "]";
+    // add one when displacement uses two bytes
+    info->length += 1;
 
   } else if (mod == 0x02) {
     uint16_t disp = le_16(byte, offset + 2);
-    // FIXME
     // std::stringstream stream;
     // stream << setfill('0') << setw(4) << hex << disp;
     // string rm_name = rm_table[rm] + " + " + stream.str() + "]";
     string rm_name = rm_table[rm] + " + " + print_hex(disp) + "]";
+    // add two when displacement uses two bytes
+    info->length += 2;
   } else if (mod == 0x00) {
     rm_name = rm_table[rm] + "]";
   }
@@ -64,13 +68,15 @@ void parse_mod_reg_rm16(instruction_info *info, uint8_t *byte, int offset) {
   }
 };
 
-void parse_reg16_end(instruction_info *info, uint8_t *byte, int offset) {
+void parse_reg_end(instruction_info *info, uint8_t *byte, int offset) {
+  info->length = 1;
   uint8_t opcode = byte[offset];
   uint8_t reg = opcode - 0x50;
   info->op1 = reg_table[1][reg];
 }
 
 void parse_reg_imm(instruction_info *info, uint8_t *byte, int offset) {
+  info->length = 2;
   uint8_t opcode = byte[offset];
   uint8_t reg = (opcode & 0x07);
   uint8_t w = (opcode & 0x08) >> 3;
@@ -89,5 +95,9 @@ void parse_reg_imm(instruction_info *info, uint8_t *byte, int offset) {
 }
 
 void parse_dir_w_seg(instruction_info *info, uint8_t *byte, int offset) {
+  // TODO: Add sign extension
+  info->length = 3;
   uint16_t disp = le_16(byte, offset + 1);
+  uint16_t ea = disp + offset + info->length - 32;
+  info->op1 = print_hex(ea);
 }
