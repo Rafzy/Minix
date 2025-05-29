@@ -14,6 +14,17 @@ void print_result(instruction_info info) {
 int analyze_opcode(uint8_t *byte, int *offset) {
   instruction_info result_info;
   switch (byte[*offset]) {
+
+  case 0x00:
+  case 0x01:
+  case 0x02:
+  case 0x03: {
+    result_info.mnemonic = "add";
+    parse_mod_reg_rm(&result_info, byte, *offset);
+    cout << result_info.mnemonic << " " << result_info.op1 << ", "
+         << result_info.op2;
+    break;
+  }
   case 0x50:
   case 0x51:
   case 0x52:
@@ -37,8 +48,14 @@ int analyze_opcode(uint8_t *byte, int *offset) {
     switch ((byte[(*offset) + 1] & 0x38) >> 3) {
     case 0x00: {
       // ADD Immediate to register/memory
+      result_info.mnemonic = "add";
+      parse_rm_imm(&result_info, byte, *offset);
+      cout << result_info.mnemonic << " " << result_info.op1 << ", "
+           << result_info.op2;
+      break;
     }
     }
+    break;
   }
 
   case 0x88:
@@ -82,8 +99,17 @@ int analyze_opcode(uint8_t *byte, int *offset) {
     cout << result_info.mnemonic << " " << hex << (int)imm_value;
     break;
   }
+  case 0xe4:
+  case 0xe5: {
+  }
   case 0xe8: {
     result_info.mnemonic = "call";
+    parse_dir_w_seg(&result_info, byte, *offset);
+    cout << result_info.mnemonic << " " << result_info.op1;
+    break;
+  }
+  case 0xe9: {
+    result_info.mnemonic = "jmp";
     parse_dir_w_seg(&result_info, byte, *offset);
     cout << result_info.mnemonic << " " << result_info.op1;
     break;

@@ -45,7 +45,8 @@ void parse_mod_reg_rm(instruction_info *info, uint8_t *byte, int offset) {
   uint8_t mod = (opcode_2 & 0xc0) >> 6;
   uint8_t reg = (opcode_2 & 0x38) >> 3;
   uint8_t rm = (opcode_2 & 0x07);
-  string reg_name = reg_table[1][reg];
+  uint8_t w = (opcode & 0x01);
+  string reg_name = reg_table[w][reg];
   string rm_name;
   if (mod == 0x03) {
     rm_name = reg_table[1][rm];
@@ -59,7 +60,7 @@ void parse_mod_reg_rm(instruction_info *info, uint8_t *byte, int offset) {
 
   } else if (mod == 0x02) {
     uint16_t disp = le_16(byte, offset + info->length);
-    string rm_name = rm_table[rm] + " + " + print_hex(disp, 2) + "]";
+    rm_name = rm_table[rm] + " + " + print_hex(disp, 2) + "]";
     // add two when displacement uses two bytes
     info->length += 2;
   } else if (mod == 0x00) {
@@ -100,8 +101,6 @@ void parse_reg_imm(instruction_info *info, uint8_t *byte, int offset) {
     imm = byte[offset + 1];
   }
   info->op1 = reg_name;
-  // std::stringstream stream;
-  // stream << setfill('0') << setw(4) << hex << imm;
   info->op2 = print_hex(imm, 4);
 }
 
@@ -122,7 +121,13 @@ void parse_rm_imm(instruction_info *info, uint8_t *byte, int offset) {
     // Use second data byte
     info->length += 1;
     data = le_16(byte, offset + 2);
-  } else {
+
+  }
+  // TODO: handle sign extend
+  // else if (sw == 0x03) {
+  //   int8_t data = (int8_t)byte[offset + 2];
+  // }
+  else {
     data = byte[offset + 2];
   }
   if (mod == 0x03) {
@@ -131,11 +136,22 @@ void parse_rm_imm(instruction_info *info, uint8_t *byte, int offset) {
     rm_name = rm_table[rm] + "]";
   } else if (mod == 0x02) {
     uint16_t disp = le_16(byte, offset + info->length);
+    rm_name = rm_table[rm] + " + " + print_hex(disp, 2) + "]";
+    info->length += 2;
+  } else if (mod == 0x01) {
+    int8_t disp = (int8_t)byte[offset + info->length];
+    rm_name = rm_table[rm] + (disp < 0 ? " - " : " + ") +
+              print_hex(abs(disp), 2) + "]";
+    info->length += 1;
   }
+
+  info->op1 = rm_name;
+  info->op2 = print_hex(data, 1);
 }
 
 // Opcodes:
 // CALL
+// JMP
 void parse_dir_w_seg(instruction_info *info, uint8_t *byte, int offset) {
   info->length = 3;
   int16_t disp = (int16_t)le_16(byte, offset + 1);
