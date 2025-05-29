@@ -33,7 +33,12 @@ int analyze_opcode(uint8_t *byte, int *offset) {
   case 0x81:
   case 0x82:
   case 0x83: {
-    // TODO:
+    // TODO:: Nested case
+    switch ((byte[(*offset) + 1] & 0x38) >> 3) {
+    case 0x00: {
+      // ADD Immediate to register/memory
+    }
+    }
   }
 
   case 0x88:

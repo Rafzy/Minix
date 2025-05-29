@@ -51,18 +51,14 @@ void parse_mod_reg_rm(instruction_info *info, uint8_t *byte, int offset) {
     rm_name = reg_table[1][rm];
   } else if (mod == 0x01) {
     // typecast int_8 for sign extension
-    int8_t disp = (int8_t)byte[offset + 2];
-    // string se_disp = print_hex(abs(disp));
+    int8_t disp = (int8_t)byte[offset + info->length];
     rm_name = rm_table[rm] + (disp >= 0 ? " + " : " - ") +
               print_hex(abs(disp), 2) + "]";
     // add one when displacement uses two bytes
     info->length += 1;
 
   } else if (mod == 0x02) {
-    uint16_t disp = le_16(byte, offset + 2);
-    // std::stringstream stream;
-    // stream << setfill('0') << setw(4) << hex << disp;
-    // string rm_name = rm_table[rm] + " + " + stream.str() + "]";
+    uint16_t disp = le_16(byte, offset + info->length);
     string rm_name = rm_table[rm] + " + " + print_hex(disp, 2) + "]";
     // add two when displacement uses two bytes
     info->length += 2;
@@ -121,7 +117,7 @@ void parse_rm_imm(instruction_info *info, uint8_t *byte, int offset) {
   uint8_t mod = (opcode_2 & 0xC0) >> 6;
   uint8_t rm = (opcode_2 & 0x07);
   string rm_name;
-  uint8_t data;
+  uint16_t data;
   if (sw == 0x01) {
     // Use second data byte
     info->length += 1;
@@ -131,7 +127,10 @@ void parse_rm_imm(instruction_info *info, uint8_t *byte, int offset) {
   }
   if (mod == 0x03) {
     rm_name = reg_table[1][rm];
+  } else if (mod == 0x00) {
+    rm_name = rm_table[rm] + "]";
   } else if (mod == 0x02) {
+    uint16_t disp = le_16(byte, offset + info->length);
   }
 }
 
