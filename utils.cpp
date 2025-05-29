@@ -3,6 +3,7 @@
 #include "registers.hpp"
 #include <cstdint>
 #include <iomanip>
+#include <iostream>
 #include <sstream>
 #include <string>
 
@@ -26,6 +27,13 @@ string print_hex(int16_t val, int width = 4) {
   std::stringstream stream;
   stream << setfill('0') << setw(width) << std::hex << val;
   return stream.str();
+}
+
+void print_op_byte(uint8_t *byte, int offset, int length) {
+  for (int i = 0; i < length; i++) {
+    cout << hex << byte[offset + 0];
+  }
+  cout << setfill(' ') << setw(7);
 }
 
 // Opcodes:
@@ -102,9 +110,17 @@ void parse_reg_imm(instruction_info *info, uint8_t *byte, int offset) {
 }
 
 // Opcodes:
+// ADD
+// ADC
+void parse_rm_imm(instruction_info *info, uint8_t *byte, int offset) {
+  info->length = 3;
+  uint8_t opcode = byte[offset];
+  uint8_t sw = (opcode & 0x03);
+}
+
+// Opcodes:
 // CALL
 void parse_dir_w_seg(instruction_info *info, uint8_t *byte, int offset) {
-  // TODO: Add sign extension??
   info->length = 3;
   int16_t disp = (int16_t)le_16(byte, offset + 1);
   uint16_t ea = disp + offset + info->length - 32;

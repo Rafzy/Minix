@@ -1,6 +1,8 @@
 #include "opcode.hpp"
 #include "utils.hpp"
 #include <cstdint>
+#include <iomanip>
+#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -66,7 +68,10 @@ int main(int argc, char *argv[]) {
   Header.a_text = le_32(buffer, 8);
 
   for (int offset = 32; offset < Header.a_text + 32;) {
+    cout << setfill(' ') << setw(6) << left
+         << print_hex((uint16_t)(offset - 32), 4) + ":";
     analyze_opcode(buffer, &offset);
+    cout << '\n';
   }
 
   free(buffer);

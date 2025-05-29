@@ -25,8 +25,15 @@ int analyze_opcode(uint8_t *byte, int *offset) {
     result_info.mnemonic = "push";
     parse_reg_end(&result_info, byte, *offset);
     cout << result_info.mnemonic << " ";
-    cout << result_info.op1 << "\n";
+    cout << result_info.op1;
     break;
+  }
+
+  case 0x80:
+  case 0x81:
+  case 0x82:
+  case 0x83: {
+    // TODO:
   }
 
   case 0x88:
@@ -36,7 +43,7 @@ int analyze_opcode(uint8_t *byte, int *offset) {
     result_info.mnemonic = "mov";
     parse_mod_reg_rm(&result_info, byte, *offset);
     cout << result_info.mnemonic << " " << result_info.op1 << ", "
-         << result_info.op2 << "\n";
+         << result_info.op2;
     break;
   }
 
@@ -60,31 +67,38 @@ int analyze_opcode(uint8_t *byte, int *offset) {
     parse_reg_imm(&result_info, byte, *offset);
     cout << result_info.mnemonic << " ";
     cout << result_info.op1 << ", ";
-    cout << result_info.op2 << '\n';
+    cout << result_info.op2;
     break;
   }
   case 0xcd: {
     result_info.mnemonic = "int";
     result_info.length = 2;
     uint8_t imm_value = byte[*offset + 1];
-    cout << result_info.mnemonic << " " << hex << (int)imm_value << "\n";
+    cout << result_info.mnemonic << " " << hex << (int)imm_value;
     break;
   }
   case 0xe8: {
     result_info.mnemonic = "call";
     parse_dir_w_seg(&result_info, byte, *offset);
-    cout << result_info.mnemonic << " " << result_info.op1 << "\n";
+    cout << result_info.mnemonic << " " << result_info.op1;
+    break;
   }
   case 0xeb: {
     result_info.mnemonic = "jmp short";
     parse_dir_w_seg_short(&result_info, byte, *offset);
-    cout << result_info.mnemonic << " " << result_info.op1 << "\n";
+    cout << result_info.mnemonic << " " << result_info.op1;
+    break;
   }
 
   default: {
     result_info.length = 1;
+    break;
   }
   }
+
+  // TODO:
+  //  print_op_byte(byte, *offset, result_info.length);
+  //  print_result
 
   *offset += result_info.length;
   return 1;
