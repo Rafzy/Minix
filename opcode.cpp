@@ -75,6 +75,11 @@ int analyze_opcode(uint8_t *byte, int *offset) {
     parse_dir_w_seg(&result_info, byte, *offset);
     cout << result_info.mnemonic << " " << result_info.op1 << "\n";
   }
+  case 0xeb: {
+    result_info.mnemonic = "jmp short";
+    parse_dir_w_seg_short(&result_info, byte, *offset);
+    cout << result_info.mnemonic << " " << result_info.op1 << "\n";
+  }
 
   default: {
     result_info.length = 1;

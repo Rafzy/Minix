@@ -15,18 +15,21 @@ uint16_t le_16(uint8_t *bytes, int offset) {
   return bytes[offset] | bytes[offset + 1] << 8;
 }
 
-string sign_extend(int16_t val) {
+// DEPCRECATED
+// string sign_extend(int16_t val, int width = 4) {
+//   std::stringstream stream;
+//   stream << setfill('0') << setw(width) << std::hex << abs(val);
+//   return stream.str();
+// }
+
+string print_hex(int16_t val, int width = 4) {
   std::stringstream stream;
-  stream << std::hex << abs(val);
+  stream << setfill('0') << setw(width) << std::hex << val;
   return stream.str();
 }
 
-string print_hex(int16_t val) {
-  std::stringstream stream;
-  stream << setfill('0') << setw(4) << std::hex << val;
-  return stream.str();
-}
-
+// Opcodes:
+// MOV
 void parse_mod_reg_rm(instruction_info *info, uint8_t *byte, int offset) {
   info->length = 2;
   uint8_t opcode = byte[offset];
@@ -42,8 +45,8 @@ void parse_mod_reg_rm(instruction_info *info, uint8_t *byte, int offset) {
     // typecast int_8 for sign extension
     int8_t disp = (int8_t)byte[offset + 2];
     // string se_disp = print_hex(abs(disp));
-    rm_name =
-        rm_table[rm] + (disp >= 0 ? " + " : " - ") + print_hex(abs(disp)) + "]";
+    rm_name = rm_table[rm] + (disp >= 0 ? " + " : " - ") +
+              print_hex(abs(disp), 2) + "]";
     // add one when displacement uses two bytes
     info->length += 1;
 
@@ -52,7 +55,7 @@ void parse_mod_reg_rm(instruction_info *info, uint8_t *byte, int offset) {
     // std::stringstream stream;
     // stream << setfill('0') << setw(4) << hex << disp;
     // string rm_name = rm_table[rm] + " + " + stream.str() + "]";
-    string rm_name = rm_table[rm] + " + " + print_hex(disp) + "]";
+    string rm_name = rm_table[rm] + " + " + print_hex(disp, 2) + "]";
     // add two when displacement uses two bytes
     info->length += 2;
   } else if (mod == 0x00) {
@@ -68,6 +71,8 @@ void parse_mod_reg_rm(instruction_info *info, uint8_t *byte, int offset) {
   }
 };
 
+// Opcodes:
+// PUSH
 void parse_reg_end(instruction_info *info, uint8_t *byte, int offset) {
   info->length = 1;
   uint8_t opcode = byte[offset];
@@ -75,6 +80,8 @@ void parse_reg_end(instruction_info *info, uint8_t *byte, int offset) {
   info->op1 = reg_table[1][reg];
 }
 
+// Opcodes:
+// MOV
 void parse_reg_imm(instruction_info *info, uint8_t *byte, int offset) {
   info->length = 2;
   uint8_t opcode = byte[offset];
@@ -91,13 +98,24 @@ void parse_reg_imm(instruction_info *info, uint8_t *byte, int offset) {
   info->op1 = reg_name;
   // std::stringstream stream;
   // stream << setfill('0') << setw(4) << hex << imm;
-  info->op2 = print_hex(imm);
+  info->op2 = print_hex(imm, 4);
 }
 
+// Opcodes:
+// CALL
 void parse_dir_w_seg(instruction_info *info, uint8_t *byte, int offset) {
-  // TODO: Add sign extension
+  // TODO: Add sign extension??
   info->length = 3;
-  uint16_t disp = le_16(byte, offset + 1);
+  int16_t disp = (int16_t)le_16(byte, offset + 1);
   uint16_t ea = disp + offset + info->length - 32;
-  info->op1 = print_hex(ea);
+  info->op1 = print_hex(ea, 4);
+}
+
+// Opcodes:
+// JMP SHORT
+void parse_dir_w_seg_short(instruction_info *info, uint8_t *byte, int offset) {
+  info->length = 2;
+  int16_t disp = (int16_t)byte[offset + 1];
+  uint16_t ea = disp + offset + info->length - 32;
+  info->op1 = print_hex(ea, 4);
 }

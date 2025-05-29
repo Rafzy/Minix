@@ -21,4 +21,7 @@ void parse_reg_imm(instruction_info *info, uint8_t *byte, int offset);
 
 // XXXXXXXX disp-low disp-high
 void parse_dir_w_seg(instruction_info *info, uint8_t *byte, int offset);
+
+// XXXXXXXX disp
+void parse_dir_w_seg_short(instruction_info *info, uint8_t *byte, int offset);
 #endif // !UTILS_H
