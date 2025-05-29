@@ -101,6 +101,8 @@ int analyze_opcode(uint8_t *byte, int *offset) {
   }
   case 0xe4:
   case 0xe5: {
+    result_info.mnemonic = "in";
+    result_info.length = 2;
   }
   case 0xe8: {
     result_info.mnemonic = "call";
