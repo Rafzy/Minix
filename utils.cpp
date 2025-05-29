@@ -41,10 +41,10 @@ void print_op_byte(uint8_t *byte, int offset, int length) {
 void parse_mod_reg_rm(instruction_info *info, uint8_t *byte, int offset) {
   info->length = 2;
   uint8_t opcode = byte[offset];
-  uint8_t operand = byte[offset + 1];
-  uint8_t mod = (operand & 0xc0) >> 6;
-  uint8_t reg = (operand & 0x38) >> 3;
-  uint8_t rm = (operand & 0x07);
+  uint8_t opcode_2 = byte[offset + 1];
+  uint8_t mod = (opcode_2 & 0xc0) >> 6;
+  uint8_t reg = (opcode_2 & 0x38) >> 3;
+  uint8_t rm = (opcode_2 & 0x07);
   string reg_name = reg_table[1][reg];
   string rm_name;
   if (mod == 0x03) {
@@ -113,9 +113,26 @@ void parse_reg_imm(instruction_info *info, uint8_t *byte, int offset) {
 // ADD
 // ADC
 void parse_rm_imm(instruction_info *info, uint8_t *byte, int offset) {
+  // TODO: Finish this shit
   info->length = 3;
   uint8_t opcode = byte[offset];
+  uint8_t opcode_2 = byte[offset + 1];
   uint8_t sw = (opcode & 0x03);
+  uint8_t mod = (opcode_2 & 0xC0) >> 6;
+  uint8_t rm = (opcode_2 & 0x07);
+  string rm_name;
+  uint8_t data;
+  if (sw == 0x01) {
+    // Use second data byte
+    info->length += 1;
+    data = le_16(byte, offset + 2);
+  } else {
+    data = byte[offset + 2];
+  }
+  if (mod == 0x03) {
+    rm_name = reg_table[1][rm];
+  } else if (mod == 0x02) {
+  }
 }
 
 // Opcodes:
