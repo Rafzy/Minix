@@ -209,7 +209,7 @@ void parse_rm(instruction_info *info, uint8_t *byte, int offset) {
 // JMP
 void parse_dir_w_seg(instruction_info *info, uint8_t *byte, int offset) {
   info->length = 3;
-  int16_t disp = (int16_t)le_16(byte, offset + 1);
+  uint16_t disp = le_16(byte, offset + 1);
   uint16_t ea = disp + offset + info->length - 32;
   info->op1 = print_hex(ea, 4);
 }
