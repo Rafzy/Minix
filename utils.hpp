@@ -26,7 +26,7 @@ void parse_rm_imm(instruction_info *info, uint8_t *byte, int offset);
 void parse_dir_w_seg(instruction_info *info, uint8_t *byte, int offset);
 
 // XXXXXXXX disp
-void parse_dir_w_seg_short(instruction_info *info, uint8_t *byte, int offset);
+void parse_disp(instruction_info *info, uint8_t *byte, int offset);
 
 // XXXXXXXX mod|XXX|rm
 void parse_rm(instruction_info *info, uint8_t *byte, int offset);

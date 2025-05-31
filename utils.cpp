@@ -179,10 +179,10 @@ void parse_dir_w_seg(instruction_info *info, uint8_t *byte, int offset) {
 
 // Opcodes:
 // JMP SHORT
-void parse_dir_w_seg_short(instruction_info *info, uint8_t *byte, int offset) {
+void parse_disp(instruction_info *info, uint8_t *byte, int offset) {
   info->length = 2;
-  int16_t disp = (int16_t)byte[offset + 1];
-  uint16_t ea = disp + offset + info->length - 32;
+  int8_t disp = (int8_t)byte[offset + 1];
+  uint16_t ea = (offset - 32) + disp + info->length;
   info->op1 = print_hex(ea, 4);
 }
 

@@ -42,6 +42,15 @@ int analyze_opcode(uint8_t *byte, int *offset) {
     parse_mod_reg_rm(&result_info, byte, *offset);
     break;
   }
+
+  case 0x08:
+  case 0x09:
+  case 0x0a:
+  case 0x0b: {
+    result_info.mnemonic = "or";
+    parse_mod_reg_rm(&result_info, byte, *offset);
+    break;
+  }
   case 0x18:
   case 0x19:
   case 0x1a:
@@ -73,6 +82,12 @@ int analyze_opcode(uint8_t *byte, int *offset) {
   case 0x5f: {
     result_info.mnemonic = "pop";
     parse_reg(&result_info, byte, *offset);
+    break;
+  }
+
+  case 0x74: {
+    result_info.mnemonic = "je";
+    parse_disp(&result_info, byte, *offset);
     break;
   }
 
@@ -162,7 +177,7 @@ int analyze_opcode(uint8_t *byte, int *offset) {
   }
   case 0xeb: {
     result_info.mnemonic = "jmp short";
-    parse_dir_w_seg_short(&result_info, byte, *offset);
+    parse_disp(&result_info, byte, *offset);
     break;
   }
   case 0xff: {
