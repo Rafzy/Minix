@@ -8,10 +8,13 @@ string sign_extend(int16_t val);
 uint32_t le_32(uint8_t *bytes, int offset);
 uint16_t le_16(uint8_t *bytes, int offset);
 
-string print_hex(int16_t val, int width);
+string print_hex(int16_t val, int width = 4);
 
 // XXXXXXdw mod|reg|r/m
 void parse_mod_reg_rm(instruction_info *info, uint8_t *byte, int offset);
+
+// XXXXXXXX mod|reg|r/m
+void parse_mod_reg_rm_nodw(instruction_info *info, uint8_t *byte, int offset);
 
 // XXXXXreg
 void parse_reg_end(instruction_info *info, uint8_t *byte, int offset);

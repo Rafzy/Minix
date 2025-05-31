@@ -84,24 +84,30 @@ int analyze_opcode(uint8_t *byte, int *offset) {
     parse_reg(&result_info, byte, *offset);
     break;
   }
-
   case 0x74: {
     result_info.mnemonic = "je";
     parse_disp(&result_info, byte, *offset);
     break;
   }
-
+  case 0x7d: {
+    result_info.mnemonic = "jnl";
+    parse_disp(&result_info, byte, *offset);
+    break;
+  }
   case 0x80:
   case 0x81:
   case 0x82:
   case 0x83: {
-    // TODO:: Nested case
     switch ((byte[(*offset) + 1] & 0x38) >> 3) {
     case 0x00: {
       // ADD Immediate to register/memory
       result_info.mnemonic = "add";
       parse_rm_imm(&result_info, byte, *offset);
       break;
+    }
+    case 0x07: {
+      result_info.mnemonic = "cmp";
+      parse_rm_imm(&result_info, byte, *offset);
     }
     }
     break;
@@ -117,6 +123,15 @@ int analyze_opcode(uint8_t *byte, int *offset) {
   }
 
   case 0x8d: {
+    // TODO: Fix this
+    result_info.mnemonic = "lea";
+    parse_mod_reg_rm_nodw(&result_info, byte, *offset);
+    break;
+  }
+  case 0x98: {
+    result_info.mnemonic = "cbw";
+    result_info.length = 1;
+    break;
   }
   case 0xb0:
   case 0xb1:
@@ -138,10 +153,16 @@ int analyze_opcode(uint8_t *byte, int *offset) {
     parse_reg_imm(&result_info, byte, *offset);
     break;
   }
+  case 0xc3: {
+    result_info.mnemonic = "ret";
+    result_info.length = 1;
+    break;
+  }
   case 0xcd: {
     result_info.mnemonic = "int";
     result_info.length = 2;
-    result_info.op1 = byte[*offset + 1];
+    uint8_t val = byte[(*offset) + 1];
+    result_info.op1 = print_hex(val, 2);
     break;
   }
   case 0xe4:
@@ -180,6 +201,12 @@ int analyze_opcode(uint8_t *byte, int *offset) {
     parse_disp(&result_info, byte, *offset);
     break;
   }
+  case 0xf6:
+  case 0xf7: {
+    result_info.mnemonic = "neg";
+    parse_rm(&result_info, byte, *offset);
+    break;
+  }
   case 0xff: {
     result_info.mnemonic = "push";
     parse_rm(&result_info, byte, *offset);
@@ -187,7 +214,7 @@ int analyze_opcode(uint8_t *byte, int *offset) {
   }
   }
 
-  // TODO:
+  // TODO: Make print better
   // print_op_byte(byte, *offset, result_info.length);
   print_result(result_info);
 
