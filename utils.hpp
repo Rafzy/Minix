@@ -8,7 +8,6 @@ string sign_extend(int16_t val);
 uint32_t le_32(uint8_t *bytes, int offset);
 uint16_t le_16(uint8_t *bytes, int offset);
 
-void print_op_byte(uint8_t *byte, int offset, int length);
 string print_hex(int16_t val, int width);
 
 // XXXXXXdw mod|reg|r/m
@@ -28,4 +27,10 @@ void parse_dir_w_seg(instruction_info *info, uint8_t *byte, int offset);
 
 // XXXXXXXX disp
 void parse_dir_w_seg_short(instruction_info *info, uint8_t *byte, int offset);
+
+// XXXXXXXX mod|XXX|rm
+void parse_rm(instruction_info *info, uint8_t *byte, int offset);
+
+// XXXXX|REG
+void parse_reg(instruction_info *info, uint8_t *byte, int offset);
 #endif // !UTILS_H

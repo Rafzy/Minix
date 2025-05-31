@@ -29,13 +29,6 @@ string print_hex(int16_t val, int width = 4) {
   return stream.str();
 }
 
-void print_op_byte(uint8_t *byte, int offset, int length) {
-  for (int i = 0; i < length; i++) {
-    cout << hex << byte[offset + 0];
-  }
-  cout << setfill(' ') << setw(7);
-}
-
 // Opcodes:
 // MOV
 void parse_mod_reg_rm(instruction_info *info, uint8_t *byte, int offset) {
@@ -150,6 +143,31 @@ void parse_rm_imm(instruction_info *info, uint8_t *byte, int offset) {
 }
 
 // Opcodes:
+// PUSH
+void parse_rm(instruction_info *info, uint8_t *byte, int offset) {
+  info->length = 2;
+  int8_t opcode_2 = byte[offset + 1];
+  uint8_t mod = (opcode_2 & 0xc0) >> 6;
+  uint8_t rm = (opcode_2 & 0x07);
+  string rm_name;
+  if (mod == 0x03) {
+    rm_name = reg_table[1][rm];
+  } else if (mod == 0x00) {
+    rm_name = rm_table[rm] + "]";
+  } else if (mod == 0x02) {
+    uint16_t disp = le_16(byte, offset + info->length);
+    rm_name = rm_table[rm] + " + " + print_hex(disp, 2) + "]";
+    info->length += 2;
+  } else if (mod == 0x01) {
+    int8_t disp = (int8_t)byte[offset + info->length];
+    rm_name = rm_table[rm] + (disp < 0 ? " - " : " + ") +
+              print_hex(abs(disp), 2) + "]";
+    info->length += 1;
+  }
+  info->op1 = rm_name;
+}
+
+// Opcodes:
 // CALL
 // JMP
 void parse_dir_w_seg(instruction_info *info, uint8_t *byte, int offset) {
@@ -167,3 +185,13 @@ void parse_dir_w_seg_short(instruction_info *info, uint8_t *byte, int offset) {
   uint16_t ea = disp + offset + info->length - 32;
   info->op1 = print_hex(ea, 4);
 }
+
+// Opcodes:
+// POP
+// PUSH
+void parse_reg(instruction_info *info, uint8_t *byte, int offset) {
+  info->length = 1;
+  uint8_t opcode = byte[offset];
+  uint8_t reg = (opcode & 0x07);
+  info->op1 = reg_table[1][reg];
+};
