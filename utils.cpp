@@ -58,6 +58,11 @@ void parse_mod_reg_rm(instruction_info *info, uint8_t *byte, int offset) {
     info->length += 2;
   } else if (mod == 0x00) {
     rm_name = rm_table[rm] + "]";
+    if (rm == 0x06) {
+      uint16_t disp = le_16(byte, offset + info->length);
+      rm_name = "[" + print_hex(disp, 4) + "]";
+      info->length += 2;
+    }
   }
 
   if ((opcode & 0x02) == 0x02) {
@@ -178,6 +183,46 @@ void parse_rm_imm(instruction_info *info, uint8_t *byte, int offset) {
 }
 
 // Opcodes:
+// TEST
+// AND
+void parse_rm_imm_no_s(instruction_info *info, uint8_t *byte, int offset) {
+  info->length = 2;
+  uint8_t opcode = byte[offset];
+  uint8_t opcode_2 = byte[offset + 1];
+  uint8_t w = (opcode & 0x01);
+  uint8_t mod = (opcode_2 & 0xC0) >> 6;
+  uint8_t rm = (opcode_2 & 0x07);
+  string rm_name;
+  uint16_t data;
+
+  if (mod == 0x03) {
+    rm_name = reg_table[w][rm];
+  } else if (mod == 0x00) {
+    rm_name = rm_table[rm] + "]";
+  } else if (mod == 0x02) {
+    uint16_t disp = le_16(byte, offset + info->length);
+    rm_name = rm_table[rm] + " + " + print_hex(disp, 2) + "]";
+    info->length += 2;
+  } else if (mod == 0x01) {
+    int8_t disp = (int8_t)byte[offset + info->length];
+    rm_name = rm_table[rm] + (disp < 0 ? " - " : " + ") +
+              print_hex(abs(disp), 2) + "]";
+    info->length += 1;
+  }
+
+  if (w == 0x01) {
+    data = le_16(byte, offset + info->length);
+    info->length += 2;
+  } else {
+    data = byte[offset + info->length];
+    info->length += 1;
+  }
+
+  info->op1 = rm_name;
+  info->op2 = print_hex(data, 1);
+}
+
+// Opcodes:
 // PUSH
 void parse_rm(instruction_info *info, uint8_t *byte, int offset) {
   info->length = 2;
@@ -202,6 +247,37 @@ void parse_rm(instruction_info *info, uint8_t *byte, int offset) {
     info->length += 1;
   }
   info->op1 = rm_name;
+}
+
+void parse_rm_v(instruction_info *info, uint8_t *byte, int offset) {
+  info->length = 2;
+  uint8_t opcode = byte[offset];
+  uint8_t opcode_2 = byte[offset + 1];
+  uint8_t mod = (opcode_2 & 0xc0) >> 6;
+  uint8_t rm = (opcode_2 & 0x07);
+  uint8_t v = (opcode & 0x02) >> 1;
+  uint8_t w = (opcode & 0x01);
+  string rm_name;
+  if (mod == 0x03) {
+    rm_name = reg_table[w][rm];
+  } else if (mod == 0x00) {
+    rm_name = rm_table[rm] + "]";
+  } else if (mod == 0x02) {
+    uint16_t disp = le_16(byte, offset + info->length);
+    rm_name = rm_table[rm] + " + " + print_hex(disp, 2) + "]";
+    info->length += 2;
+  } else if (mod == 0x01) {
+    int8_t disp = (int8_t)byte[offset + info->length];
+    rm_name = rm_table[rm] + (disp < 0 ? " - " : " + ") +
+              print_hex(abs(disp), 2) + "]";
+    info->length += 1;
+  }
+  info->op1 = rm_name;
+  if (v == 0x01) {
+    info->op2 = "CL";
+  } else if (v == 0x00) {
+    info->op2 = "1";
+  }
 }
 
 // Opcodes:

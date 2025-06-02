@@ -59,6 +59,34 @@ int analyze_opcode(uint8_t *byte, int *offset) {
     parse_mod_reg_rm(&result_info, byte, *offset);
     break;
   }
+  case 0x20:
+  case 0x21:
+  case 0x22:
+  case 0x23: {
+    result_info.mnemonic = "and";
+    parse_mod_reg_rm(&result_info, byte, *offset);
+    break;
+  }
+  case 0x30:
+  case 0x31:
+  case 0x32:
+  case 0x33: {
+    result_info.mnemonic = "xor";
+    parse_mod_reg_rm(&result_info, byte, *offset);
+    break;
+  }
+  case 0x48:
+  case 0x49:
+  case 0x4a:
+  case 0x4b:
+  case 0x4c:
+  case 0x4d:
+  case 0x4e:
+  case 0x4f: {
+    result_info.mnemonic = "dec";
+    parse_reg(&result_info, byte, *offset);
+    break;
+  }
   case 0x50:
   case 0x51:
   case 0x52:
@@ -84,8 +112,23 @@ int analyze_opcode(uint8_t *byte, int *offset) {
     parse_reg(&result_info, byte, *offset);
     break;
   }
+  case 0x73: {
+    result_info.mnemonic = "jnb";
+    parse_disp(&result_info, byte, *offset);
+    break;
+  }
   case 0x74: {
     result_info.mnemonic = "je";
+    parse_disp(&result_info, byte, *offset);
+    break;
+  }
+  case 0x75: {
+    result_info.mnemonic = "jne";
+    parse_disp(&result_info, byte, *offset);
+    break;
+  }
+  case 0x7c: {
+    result_info.mnemonic = "jl";
     parse_disp(&result_info, byte, *offset);
     break;
   }
@@ -165,6 +208,19 @@ int analyze_opcode(uint8_t *byte, int *offset) {
     result_info.op1 = print_hex(val, 2);
     break;
   }
+  case 0xd0:
+  case 0xd1:
+  case 0xd2:
+  case 0xd3: {
+    switch ((byte[(*offset) + 1] & 0x38) >> 3) {
+    case 0x04: {
+      result_info.mnemonic = "shl";
+      parse_rm_v(&result_info, byte, *offset);
+      break;
+    }
+    }
+    break;
+  }
   case 0xe4:
   case 0xe5: {
     result_info.mnemonic = "in";
@@ -201,10 +257,25 @@ int analyze_opcode(uint8_t *byte, int *offset) {
     parse_disp(&result_info, byte, *offset);
     break;
   }
+  case 0xf4: {
+    result_info.mnemonic = "hlt";
+    result_info.length = 1;
+    break;
+  }
   case 0xf6:
   case 0xf7: {
-    result_info.mnemonic = "neg";
-    parse_rm(&result_info, byte, *offset);
+    switch ((byte[(*offset) + 1] & 0x38) >> 3) {
+    case 0x03: {
+      result_info.mnemonic = "neg";
+      parse_rm(&result_info, byte, *offset);
+      break;
+    }
+    case 0x00: {
+      result_info.mnemonic = "test";
+      parse_rm_imm_no_s(&result_info, byte, *offset);
+      break;
+    }
+    }
     break;
   }
   case 0xff: {
