@@ -42,4 +42,7 @@ void parse_rm_v(instruction_info *info, uint8_t *byte, int offset);
 
 // XXXXX|REG
 void parse_reg(instruction_info *info, uint8_t *byte, int offset);
+
+// XXXXXXXw data data(if w = 1)
+void parse_imm_acc(instruction_info *info, uint8_t *byte, int offset);
 #endif // !UTILS_H

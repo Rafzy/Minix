@@ -308,3 +308,15 @@ void parse_reg(instruction_info *info, uint8_t *byte, int offset) {
   uint8_t reg = (opcode & 0x07);
   info->op1 = reg_table[1][reg];
 };
+
+void parse_imm_acc(instruction_info *info, uint8_t *byte, int offset) {
+  info->length = 2;
+  uint8_t opcode = byte[offset];
+  uint8_t w = (opcode & 0x01);
+  uint16_t data = byte[offset + 1];
+  if (w == 0x01) {
+    data = le_16(byte, offset + 1);
+  }
+  info->op1 = reg_table[1][0];
+  info->op2 = print_hex(data, 4);
+}
