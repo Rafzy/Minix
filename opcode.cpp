@@ -180,6 +180,10 @@ int analyze_opcode(uint8_t *byte, int *offset) {
       parse_rm_imm(&result_info, byte, *offset);
       break;
     }
+    case 0x03: {
+      result_info.mnemonic = "sbb";
+      parse_rm_imm(&result_info, byte, *offset);
+    }
     }
     break;
   }
@@ -242,7 +246,11 @@ int analyze_opcode(uint8_t *byte, int *offset) {
     break;
   }
   // TODO: Continue
+  case 0xc6:
   case 0xc7: {
+    result_info.mnemonic = "mov";
+    parse_rm_imm_no_s(&result_info, byte, *offset);
+    break;
   }
   case 0xd0:
   case 0xd1:

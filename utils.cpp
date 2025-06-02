@@ -309,6 +309,8 @@ void parse_reg(instruction_info *info, uint8_t *byte, int offset) {
   info->op1 = reg_table[1][reg];
 };
 
+// Opcodes:
+// INC
 void parse_imm_acc(instruction_info *info, uint8_t *byte, int offset) {
   info->length = 2;
   uint8_t opcode = byte[offset];
