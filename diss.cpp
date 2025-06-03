@@ -66,6 +66,7 @@ int main(int argc, char *argv[]) {
 
   header Header;
   Header.a_text = le_32(buffer, 8);
+  Header.a_data = le_32(buffer, 12);
 
   for (int offset = 32; offset < Header.a_text + 32;) {
     cout << setfill(' ') << setw(6) << left

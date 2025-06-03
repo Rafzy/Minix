@@ -80,6 +80,9 @@ int analyze_opcode(uint8_t *byte, int *offset) {
     parse_mod_reg_rm(&result_info, byte, *offset);
     break;
   }
+  case 0x39: {
+    // TODO: continue
+  }
   case 0x40:
   case 0x41:
   case 0x42:
