@@ -1,4 +1,5 @@
 #include "opcode.hpp"
+#include "parser.hpp"
 #include "registers.hpp"
 #include "utils.hpp"
 #include <cstdint>
