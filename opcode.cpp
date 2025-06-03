@@ -16,14 +16,7 @@ void print_op_byte(uint8_t *byte, int offset, int length) {
   cout << setfill(' ') << setw(8) << " ";
 }
 
-void print_result(instruction_info info) {
-  cout << info.mnemonic << " " << (info.op1 != "" ? info.op1 : "")
-       << (info.op2 != "" ? ", " + info.op2 : "")
-       << (info.op3 != "" ? ", " + info.op3 : "")
-       << (info.op4 != "" ? ", " + info.op4 : "");
-}
-
-int analyze_opcode(uint8_t *byte, int *offset) {
+instruction_info analyze_opcode(uint8_t *byte, int *offset) {
   instruction_info result_info;
   result_info.mnemonic = "[UNKNOWN]";
   result_info.op1 = "";
@@ -339,8 +332,7 @@ int analyze_opcode(uint8_t *byte, int *offset) {
 
   // TODO: Make print better
   // print_op_byte(byte, *offset, result_info.length);
-  print_result(result_info);
+  // print_result(result_info);
 
-  *offset += result_info.length;
-  return 1;
+  return result_info;
 }

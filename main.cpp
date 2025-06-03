@@ -71,8 +71,10 @@ int main(int argc, char *argv[]) {
   for (int offset = 32; offset < Header.a_text + 32;) {
     cout << setfill(' ') << setw(6) << left
          << print_hex((uint16_t)(offset - 32), 4) + ":";
-    analyze_opcode(buffer, &offset);
-    cout << '\n';
+
+    instruction_info result_info = analyze_opcode(buffer, &offset);
+    print_result(result_info);
+    offset += result_info.length;
   }
 
   free(buffer);

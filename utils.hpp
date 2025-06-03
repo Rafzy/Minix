@@ -10,6 +10,8 @@ uint16_t le_16(uint8_t *bytes, int offset);
 
 string print_hex(int16_t val, int width = 4);
 
+void print_result(instruction_info info);
+
 // XXXXXXdw mod|reg|r/m
 void parse_mod_reg_rm(instruction_info *info, uint8_t *byte, int offset);
 
