@@ -1,3 +1,4 @@
+#include "handlers.hpp"
 #include "opcode.hpp"
 #include "utils.hpp"
 #include <cstdint>
@@ -70,12 +71,14 @@ int main(int argc, char *argv[]) {
 
   int text_start = 32;
   int data_start = 32 + Header.a_text;
+
   for (int offset = text_start; offset < Header.a_text + text_start;) {
     cout << setfill(' ') << setw(6) << left
          << print_hex((uint16_t)(offset - text_start), 4) + ":";
 
     instruction_info result_info = analyze_opcode(buffer, &offset);
     print_result(result_info);
+
     offset += result_info.length;
   }
 
