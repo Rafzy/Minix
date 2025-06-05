@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
   uint8_t *buffer;
   long byte_size;
 
-  if (argc != 2) {
+  if (argc < 2) {
     printf("Argument format wrong");
     return 1;
   }
@@ -39,6 +39,10 @@ int main(int argc, char *argv[]) {
   if (!file) {
     perror("Reading File Failed");
     return 1;
+  }
+
+  for (int i = 0; i < argc; i++) {
+    // TODO: Handle parameters
   }
 
   // change pointer to the end of the file
@@ -71,6 +75,14 @@ int main(int argc, char *argv[]) {
 
   int text_start = 32;
   int data_start = 32 + Header.a_text;
+  uint8_t *data_block = (uint8_t *)malloc(Header.a_data);
+
+  // Grab Data block
+  int i = 0;
+  for (int offset = data_start; offset < Header.a_data + data_start; offset++) {
+    data_block[i] = buffer[offset];
+    i++;
+  }
 
   for (int offset = text_start; offset < Header.a_text + text_start;) {
     cout << setfill(' ') << setw(6) << left
@@ -79,6 +91,7 @@ int main(int argc, char *argv[]) {
     instruction_info result_info = analyze_opcode(buffer, &offset);
     print_result(result_info);
 
+    interpret(result_info);
     offset += result_info.length;
   }
 
