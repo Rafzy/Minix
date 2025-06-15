@@ -1,4 +1,3 @@
-#include "handlers.hpp"
 #include "opcode.hpp"
 #include "registers.hpp"
 #include "utils.hpp"
@@ -85,11 +84,6 @@ int main(int argc, char *argv[]) {
     i++;
   }
 
-  // Set all register value to 0
-  for (int i = 0; i < 8; i++) {
-    reg_vals[i] = 0;
-  }
-
   // Go through the text block one by one
   for (int offset = text_start; offset < Header.a_text + text_start;) {
     cout << setfill(' ') << setw(6) << left
@@ -100,7 +94,6 @@ int main(int argc, char *argv[]) {
     // TODO: Add parameter option to print or not
     print_result(result_info);
 
-    interpret(result_info, data_block);
     offset += result_info.length;
   }
 
