@@ -6,11 +6,14 @@
 #include <unordered_map>
 
 typedef enum { AX = 0, BX, CX, DX, SP, BP, SI, DI } reg_names;
+typedef enum { REGISTER = 0, IMMEDIATE, MEMORY } types;
 
 typedef struct {
   uint16_t registers[8];
   std::unordered_map<uint32_t, uint8_t> memory;
 } cpu_state;
+
+types detect_type(const string &name);
 
 void init_cpu(cpu_state *cpu);
 uint16_t get_reg16(cpu_state *cpu, uint8_t reg);
