@@ -1,5 +1,6 @@
 #include "cpu.hpp"
 #include "utils.hpp"
+#include <iostream>
 
 types detect_type(const string &name) {
   if (name[0] == '[' && name.back() == ']') {
@@ -30,11 +31,11 @@ void set_reg16(cpu_state *cpu, uint8_t reg, uint16_t val) {
   cpu->registers[reg] = val;
 }
 
-void exec_parsed(cpu_state *cpu, instruction_info info) {
-  if (info.mnemonic == "MOV") {
+void exec_parsed(cpu_state *cpu, instruction_info &info) {
+  if (info.mnemonic == "mov") {
     exec_mov(cpu, info.op1, info.op2);
   }
-  if (info.mnemonic == "INT") {
+  if (info.mnemonic == "int") {
     exec_int(cpu, info.op1);
   }
 };
@@ -49,6 +50,24 @@ void exec_mov(cpu_state *cpu, string dst, string src) {
 
     set_reg16(cpu, reg_index, imm_val);
   }
+
+  if (dst_type == REGISTER && src_type == REGISTER) {
+    uint8_t reg_src = parse_reg_name(src);
+    uint8_t reg_dst = parse_reg_name(dst);
+    uint16_t reg_src_val = get_reg16(cpu, reg_src);
+
+    set_reg16(cpu, reg_dst, reg_src_val);
+  }
+
+  if (dst_type == REGISTER && src_type == MEMORY) {
+    // TODO:
+    // ACCESS MEMORY
+  }
 };
 
-void exec_int(cpu_state *cpu, string op1);
+void exec_int(cpu_state *cpu, string op1) {
+  if (op1 == "20") {
+    // TODO:
+    // IDK WHAT TO DO
+  }
+};

@@ -1,3 +1,4 @@
+#include "cpu.hpp"
 #include "opcode.hpp"
 #include "utils.hpp"
 #include <cstdint>
@@ -83,6 +84,8 @@ int main(int argc, char *argv[]) {
     i++;
   }
 
+  cpu_state cpu;
+  init_cpu(&cpu);
   // Go through the text block one by one
   for (int offset = text_start; offset < Header.a_text + text_start;) {
     cout << setfill(' ') << setw(6) << left
@@ -92,6 +95,9 @@ int main(int argc, char *argv[]) {
 
     // TODO: Add parameter option to print or not
     print_result(result_info);
+
+    exec_parsed(&cpu, result_info);
+    cout << "BX: " << hex << cpu.registers[3] << "\n";
 
     offset += result_info.length;
   }
