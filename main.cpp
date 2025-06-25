@@ -77,15 +77,17 @@ int main(int argc, char *argv[]) {
   int data_start = 32 + Header.a_text;
   uint8_t *data_block = (uint8_t *)malloc(Header.a_data);
 
+  cpu_state_t cpu;
+  init_cpu(&cpu);
+
   // Grab Data block
   int i = 0;
+  uint16_t DS = cpu.registers[DS];
   for (int offset = data_start; offset < Header.a_data + data_start; offset++) {
     data_block[i] = buffer[offset];
     i++;
   }
 
-  cpu_state cpu;
-  init_cpu(&cpu);
   // Go through the text block one by one
   for (int offset = text_start; offset < Header.a_text + text_start;) {
     cout << setfill(' ') << setw(6) << left

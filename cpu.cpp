@@ -1,6 +1,5 @@
 #include "cpu.hpp"
 #include "utils.hpp"
-#include <iostream>
 
 types detect_type(const string &name) {
   if (name[0] == '[' && name.back() == ']') {
@@ -12,26 +11,32 @@ types detect_type(const string &name) {
   }
 }
 
-void init_cpu(cpu_state *cpu) {
-  for (int i = 0; i < 8; i++) {
+void init_cpu(cpu_state_t *cpu) {
+  for (int i = 0; i < 14; i++) {
     cpu->registers[i] = 0;
   }
-  cpu->registers[SP] = 0x1000;
+  cpu->registers[CS] = 0x1000;
+  cpu->registers[DS] = 0x2000;
+  cpu->registers[SS] = 0x3000;
+  cpu->registers[ES] = 0x2000;
+
+  cpu->registers[SP] = 0xFFFF;
+  cpu->registers[IP] = 0x0000;
 }
 
-uint16_t get_reg16(cpu_state *cpu, uint8_t reg) {
+uint16_t get_reg16(cpu_state_t *cpu, uint8_t reg) {
   if (reg > 7)
     return 0;
   return cpu->registers[reg];
 }
 
-void set_reg16(cpu_state *cpu, uint8_t reg, uint16_t val) {
+void set_reg16(cpu_state_t *cpu, uint8_t reg, uint16_t val) {
   if (reg > 7)
     return;
   cpu->registers[reg] = val;
 }
 
-void exec_parsed(cpu_state *cpu, instruction_info &info) {
+void exec_parsed(cpu_state_t *cpu, instruction_info &info) {
   if (info.mnemonic == "mov") {
     exec_mov(cpu, info.op1, info.op2);
   }
@@ -40,7 +45,7 @@ void exec_parsed(cpu_state *cpu, instruction_info &info) {
   }
 };
 
-void exec_mov(cpu_state *cpu, string dst, string src) {
+void exec_mov(cpu_state_t *cpu, string dst, string src) {
   types dst_type = detect_type(dst);
   types src_type = detect_type(src);
 
@@ -65,7 +70,7 @@ void exec_mov(cpu_state *cpu, string dst, string src) {
   }
 };
 
-void exec_int(cpu_state *cpu, string op1) {
+void exec_int(cpu_state_t *cpu, string op1) {
   if (op1 == "20") {
     // TODO:
     // IDK WHAT TO DO
