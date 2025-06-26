@@ -7,15 +7,17 @@
 
 #define MEMORY_SIZE (1 << 20);
 
-typedef enum {
+const typedef enum {
   AX = 0,
   CX,
   DX,
   BX,
+  // Special purpose registers
   SP,
   BP,
   SI,
   DI,
+  // Control Registers
   CS,
   DS,
   SS,
@@ -23,10 +25,12 @@ typedef enum {
   IP,
   FLAGS
 } reg_names;
+
 typedef enum { REGISTER = 0, IMMEDIATE, MEMORY } types;
 
 typedef struct {
-  std::unordered_map<uint32_t, uint8_t> data;
+  // std::unordered_map<uint32_t, uint8_t> data;
+  uint8_t data[(1 << 20)];
 } memory_t;
 
 typedef struct {

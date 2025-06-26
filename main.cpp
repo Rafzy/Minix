@@ -75,18 +75,26 @@ int main(int argc, char *argv[]) {
 
   int text_start = 32;
   int data_start = 32 + Header.a_text;
-  uint8_t *data_block = (uint8_t *)malloc(Header.a_data);
 
   cpu_state_t cpu;
   init_cpu(&cpu);
 
-  // Grab Data block
-  int i = 0;
-  uint16_t DS = cpu.registers[DS];
+  // Grab Data block, store it in memory in DS
+  uint16_t data_offset = 0x0000;
+  uint16_t ds_addr = cpu.registers[DS];
   for (int offset = data_start; offset < Header.a_data + data_start; offset++) {
-    data_block[i] = buffer[offset];
-    i++;
+    uint32_t addr = (DS << 4) + data_offset;
+    cpu.memory->data[addr] = buffer[offset];
+    data_offset++;
   }
+
+  for (int i = 0; i < data_offset; i++) {
+    uint32_t addr = (DS << 4) + i;
+    cout << hex << unsigned(cpu.memory->data[addr]) << " ";
+  }
+
+  // TODO:
+  // Set the Stack Segment
 
   // Go through the text block one by one
   for (int offset = text_start; offset < Header.a_text + text_start;) {
@@ -95,7 +103,6 @@ int main(int argc, char *argv[]) {
 
     instruction_info result_info = analyze_opcode(buffer, &offset);
 
-    // TODO: Add parameter option to print or not
     print_result(result_info);
 
     exec_parsed(&cpu, result_info);
