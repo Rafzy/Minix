@@ -1,4 +1,6 @@
 #include "registers.hpp"
+#include "cpu.hpp"
+#include <cstdint>
 #include <string>
 using namespace std;
 

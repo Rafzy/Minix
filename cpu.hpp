@@ -7,25 +7,6 @@
 
 #define MEMORY_SIZE (1 << 20);
 
-const typedef enum {
-  AX = 0,
-  CX,
-  DX,
-  BX,
-  // Special purpose registers
-  SP,
-  BP,
-  SI,
-  DI,
-  // Control Registers
-  CS,
-  DS,
-  SS,
-  ES,
-  IP,
-  FLAGS
-} reg_names;
-
 typedef enum { REGISTER = 0, IMMEDIATE, MEMORY } types;
 
 typedef struct {
@@ -34,7 +15,7 @@ typedef struct {
 } memory_t;
 
 typedef struct {
-  uint16_t registers[14];
+  uint16_t registers[17];
   memory_t *memory;
 } cpu_state_t;
 

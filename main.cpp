@@ -1,5 +1,6 @@
 #include "cpu.hpp"
 #include "opcode.hpp"
+#include "registers.hpp"
 #include "utils.hpp"
 #include <cstdint>
 #include <iomanip>
@@ -79,37 +80,46 @@ int main(int argc, char *argv[]) {
   cpu_state_t cpu;
   init_cpu(&cpu);
 
+  // TODO:
+  // Set the Stack Segment
+
+  // TODO:
+  // fix this
+
+  // Grab Text block, store it in memory in CS
+  uint16_t text_offset = 0x0000;
+  uint16_t cs_addr = cpu.registers[CS];
+  for (int offset = text_start; offset < Header.a_text + text_start; offset++) {
+    uint32_t addr = (cs_addr << 4) + text_offset;
+    cpu.memory->data[addr] = buffer[offset];
+    text_offset++;
+  }
+
   // Grab Data block, store it in memory in DS
   uint16_t data_offset = 0x0000;
   uint16_t ds_addr = cpu.registers[DS];
   for (int offset = data_start; offset < Header.a_data + data_start; offset++) {
-    uint32_t addr = (DS << 4) + data_offset;
+    uint32_t addr = (ds_addr << 4) + data_offset;
     cpu.memory->data[addr] = buffer[offset];
     data_offset++;
   }
 
-  for (int i = 0; i < data_offset; i++) {
-    uint32_t addr = (DS << 4) + i;
-    cout << hex << unsigned(cpu.memory->data[addr]) << " ";
-  }
-
-  // TODO:
-  // Set the Stack Segment
-
+  //
   // Go through the text block one by one
-  for (int offset = text_start; offset < Header.a_text + text_start;) {
-    cout << setfill(' ') << setw(6) << left
-         << print_hex((uint16_t)(offset - text_start), 4) + ":";
-
-    instruction_info result_info = analyze_opcode(buffer, &offset);
-
-    print_result(result_info);
-
-    exec_parsed(&cpu, result_info);
-    cout << "BX: " << hex << cpu.registers[3] << "\n";
-
-    offset += result_info.length;
-  }
+  // for (int offset = text_start; offset < Header.a_text + text_start;) {
+  //   // Dissassembler need to fix this messy code
+  //   cout << setfill(' ') << setw(6) << left
+  //        << print_hex((uint16_t)(offset - text_start), 4) + ":";
+  //
+  //   instruction_info result_info = analyze_opcode(buffer, &offset);
+  //
+  //   print_result(result_info);
+  //
+  //   exec_parsed(&cpu, result_info);
+  //   cout << "BX: " << hex << cpu.registers[3] << "\n";
+  //
+  //   offset += result_info.length;
+  // }
 
   free(buffer);
 

@@ -1,4 +1,7 @@
 #include "cpu.hpp"
+#include "interrupts.hpp"
+#include "registers.hpp"
+#include "syscalls.hpp"
 #include "utils.hpp"
 
 types detect_type(const string &name) {
@@ -20,8 +23,11 @@ void init_cpu(cpu_state_t *cpu) {
   cpu->registers[SS] = 0x3000;
   cpu->registers[ES] = 0x2000;
 
-  cpu->registers[SP] = 0xFFFF;
+  cpu->registers[SP] = 0xFFDC;
   cpu->registers[IP] = 0x0000;
+
+  // allocate for memory
+  cpu->memory = (memory_t *)malloc(sizeof(memory_t));
 }
 
 uint16_t get_reg16(cpu_state_t *cpu, uint8_t reg) {
@@ -72,7 +78,6 @@ void exec_mov(cpu_state_t *cpu, string dst, string src) {
 
 void exec_int(cpu_state_t *cpu, string op1) {
   if (op1 == "20") {
-    // TODO:
-    // IDK WHAT TO DO
+    exec_int20(cpu);
   }
 };
