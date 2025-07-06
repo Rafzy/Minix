@@ -13,6 +13,6 @@ typedef struct {
   uint16_t m6;
 } message_t;
 
-message_t exec_int20(cpu_state_t *cpu);
+void exec_int20(cpu_state_t *cpu);
 
 #endif // !INTERRUPTS

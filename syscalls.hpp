@@ -4,6 +4,6 @@
 #include "cpu.hpp"
 #include <cstdint>
 
-void write(uint32_t address);
+void sys_write(uint32_t address, int length, memory_t *memory);
 
 #endif // !SYSCALLS

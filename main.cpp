@@ -26,7 +26,7 @@ typedef struct {
   uint32_t a_syms;
 } header;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[], char *env[]) {
   FILE *file;
   uint8_t *buffer;
   long byte_size;
@@ -83,8 +83,13 @@ int main(int argc, char *argv[]) {
   // TODO:
   // Set the Stack Segment
 
-  // TODO:
-  // fix this
+  int env_count = 0;
+  while (env[env_count] != NULL) {
+    env_count++;
+  }
+
+  uint16_t *addresses =
+      (uint16_t *)malloc((argc + env_count) * sizeof(uint16_t));
 
   // Grab Text block, store it in memory in CS
   uint16_t text_offset = 0x0000;
@@ -104,8 +109,7 @@ int main(int argc, char *argv[]) {
     data_offset++;
   }
 
-  //
-  // Go through the text block one by one
+  // // Go through the text block one by one
   // for (int offset = text_start; offset < Header.a_text + text_start;) {
   //   // Dissassembler need to fix this messy code
   //   cout << setfill(' ') << setw(6) << left
@@ -116,7 +120,6 @@ int main(int argc, char *argv[]) {
   //   print_result(result_info);
   //
   //   exec_parsed(&cpu, result_info);
-  //   cout << "BX: " << hex << cpu.registers[3] << "\n";
   //
   //   offset += result_info.length;
   // }

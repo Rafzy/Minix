@@ -4,8 +4,8 @@
 #include "syscalls.hpp"
 #include "utils.hpp"
 
-message_t exec_int20(cpu_state_t *cpu) {
-  // Address that points to message structure
+void exec_int20(cpu_state_t *cpu) {
+  // Handle system calls
   uint16_t virt_addr = cpu->registers[BX];
   uint16_t data_segment = cpu->registers[DS];
   message_t msg;
@@ -20,5 +20,18 @@ message_t exec_int20(cpu_state_t *cpu) {
   msg.m5 = le_16(cpu->memory->data, addr + 12);
   msg.m6 = le_16(cpu->memory->data, addr + 14);
 
-  return msg;
+  switch (msg.syscall_num) {
+  case 1: {
+    printf("EXIT\n");
+  }
+  case 4: {
+    uint32_t write_addr = (data_segment << 4) + msg.m4;
+    sys_write(write_addr, msg.m2, cpu->memory);
+    break;
+  }
+  default: {
+    printf("ERROR: SYSCALL NOT FOUND");
+    break;
+  }
+  }
 }
