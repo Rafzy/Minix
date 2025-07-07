@@ -1,7 +1,6 @@
 #include "cpu.hpp"
 #include "interrupts.hpp"
 #include "registers.hpp"
-#include "syscalls.hpp"
 #include "utils.hpp"
 
 types detect_type(const string &name) {
@@ -74,9 +73,12 @@ void exec_mov(cpu_state_t *cpu, string dst, string src) {
   }
 
   if (dst_type == REGISTER && src_type == MEMORY) {
-    uint8_t reg_src = parse_reg_name(src);
-    // TODO:
-    // Add memory name parsing
+    uint8_t reg_dst = parse_reg_name(dst);
+    uint16_t mem_addr = parse_memory(cpu, src);
+    uint32_t full_addr = (cpu->registers[DS] << 4) + mem_addr;
+    uint16_t mem_val = le_16(cpu->memory->data, full_addr);
+
+    set_reg16(cpu, reg_dst, mem_val);
   }
 };
 

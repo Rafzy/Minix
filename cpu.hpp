@@ -3,7 +3,6 @@
 
 #include "opcode.hpp"
 #include <cstdint>
-#include <unordered_map>
 
 #define MEMORY_SIZE (1 << 20);
 

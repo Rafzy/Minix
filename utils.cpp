@@ -96,7 +96,7 @@ uint16_t parse_memory(cpu_state_t *cpu, const string &mem_name) {
     }
   }
 
-  return cpu->memory->data[(cpu->registers[DS] << 4) + result];
+  return result;
 }
 
 uint16_t parse_hex_string(const string &hex_str) {

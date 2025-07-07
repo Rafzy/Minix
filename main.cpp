@@ -1,11 +1,8 @@
 #include "cpu.hpp"
-#include "opcode.hpp"
 #include "registers.hpp"
 #include "utils.hpp"
 #include <cstdint>
 #include <cstring>
-#include <iomanip>
-#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
