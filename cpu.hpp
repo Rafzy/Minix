@@ -25,5 +25,5 @@ void set_reg16(cpu_state_t *cpu, uint8_t reg, uint16_t val);
 void exec_parsed(cpu_state_t *cpu, instruction_info &info);
 void exec_mov(cpu_state_t *cpu, string op1, string op2);
 void exec_int(cpu_state_t *cpu, string op1);
-
+void exec_xor(cpu_state_t *cpu, string op1, string op2);
 #endif // !CPU_HPP

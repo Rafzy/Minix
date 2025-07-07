@@ -1,10 +1,14 @@
 #include "utils.hpp"
+#include "cpu.hpp"
 #include "opcode.hpp"
 #include "registers.hpp"
 #include <cstdint>
+#include <cstring>
+#include <exception>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 
 uint32_t le_32(uint8_t *bytes, int offset) {
@@ -43,6 +47,57 @@ uint8_t parse_reg_name(const string &reg_name) {
   }
   return 255;
 };
+
+uint16_t parse_memory(cpu_state_t *cpu, const string &mem_name) {
+  string clean_mem = mem_name;
+
+  int len = clean_mem.size();
+  clean_mem = clean_mem.substr(1, len - 2);
+
+  int result = 0;
+  int sign = 1;
+  string token = "";
+
+  // clean_mem = "+" + clean_mem;
+  clean_mem = clean_mem + "+";
+
+  for (size_t i = 0; i < len; ++i) {
+    char c = clean_mem[i];
+
+    if (c == '+' | c == '-') {
+      if (!token.empty()) {
+        size_t start = token.find_first_not_of(" \t");
+        size_t end = token.find_last_not_of(" \t");
+
+        if (start != string::npos && end != string::npos) {
+          token = token.substr(start, end - start + 1);
+
+          if (isdigit(token[0])) {
+            try {
+              int imm_val = stoi(token);
+              result += sign * imm_val;
+            } catch (const exception &e) {
+              throw invalid_argument("Invalid imm value: " + token);
+            }
+          } else {
+            try {
+              uint8_t reg_index = parse_reg_name(token);
+              result += sign * cpu->registers[reg_index];
+            } catch (const exception &e) {
+              throw invalid_argument("Invalid register name: " + token);
+            }
+          }
+        }
+      }
+      sign = (c == '+') ? 1 : -1;
+      token = "";
+    } else {
+      token += c;
+    }
+  }
+
+  return cpu->memory->data[(cpu->registers[DS] << 4) + result];
+}
 
 uint16_t parse_hex_string(const string &hex_str) {
   string clean_hex = hex_str;

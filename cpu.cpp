@@ -23,7 +23,7 @@ void init_cpu(cpu_state_t *cpu) {
   cpu->registers[SS] = 0x3000;
   cpu->registers[ES] = 0x2000;
 
-  cpu->registers[SP] = 0xFFDC;
+  cpu->registers[SP] = 0xFFFF;
   cpu->registers[IP] = 0x0000;
 
   // allocate for memory
@@ -49,6 +49,9 @@ void exec_parsed(cpu_state_t *cpu, instruction_info &info) {
   if (info.mnemonic == "int") {
     exec_int(cpu, info.op1);
   }
+  if (info.mnemonic == "xor") {
+    exec_xor(cpu, info.op1, info.op2);
+  }
 };
 
 void exec_mov(cpu_state_t *cpu, string dst, string src) {
@@ -71,8 +74,9 @@ void exec_mov(cpu_state_t *cpu, string dst, string src) {
   }
 
   if (dst_type == REGISTER && src_type == MEMORY) {
+    uint8_t reg_src = parse_reg_name(src);
     // TODO:
-    // ACCESS MEMORY
+    // Add memory name parsing
   }
 };
 
@@ -81,3 +85,20 @@ void exec_int(cpu_state_t *cpu, string op1) {
     exec_int20(cpu);
   }
 };
+
+void exec_xor(cpu_state_t *cpu, string op1, string op2) {
+  types op1_type = detect_type(op1);
+  types op2_type = detect_type(op2);
+
+  if (op1_type == REGISTER && op2_type == REGISTER) {
+    uint8_t op1_index = parse_reg_name(op1);
+    uint8_t op2_index = parse_reg_name(op2);
+
+    cpu->registers[op1_index] =
+        (cpu->registers[op1_index] & cpu->registers[op2_index]);
+    // Set Z flag
+    if (cpu->registers[op1_index] == 0) {
+      cpu->registers[ZF] = 1;
+    }
+  }
+}

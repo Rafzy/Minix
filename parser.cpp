@@ -20,14 +20,14 @@ void parse_mod_reg_rm(instruction_info *info, uint8_t *byte, int offset) {
   } else if (mod == 0x01) {
     // typecast int_8 for sign extension
     int8_t disp = (int8_t)byte[offset + info->length];
-    rm_name = rm_table[rm] + (disp >= 0 ? " + " : " - ") +
-              print_hex(abs(disp), 2) + "]";
+    rm_name =
+        rm_table[rm] + (disp >= 0 ? "+" : "-") + print_hex(abs(disp), 2) + "]";
     // add one when displacement uses two bytes
     info->length += 1;
 
   } else if (mod == 0x02) {
     uint16_t disp = le_16(byte, offset + info->length);
-    rm_name = rm_table[rm] + " + " + print_hex(disp, 2) + "]";
+    rm_name = rm_table[rm] + "+" + print_hex(disp, 2) + "]";
     // add two when displacement uses two bytes
     info->length += 2;
   } else if (mod == 0x00) {
@@ -63,14 +63,14 @@ void parse_mod_reg_rm_nodw(instruction_info *info, uint8_t *byte, int offset) {
   } else if (mod == 0x01) {
     // typecast int_8 for sign extension
     int8_t disp = (int8_t)byte[offset + info->length];
-    rm_name = rm_table[rm] + (disp >= 0 ? " + " : " - ") +
-              print_hex(abs(disp), 2) + "]";
+    rm_name =
+        rm_table[rm] + (disp >= 0 ? "+" : "-") + print_hex(abs(disp), 2) + "]";
     // add one when displacement uses two bytes
     info->length += 1;
 
   } else if (mod == 0x02) {
     uint16_t disp = le_16(byte, offset + info->length);
-    rm_name = rm_table[rm] + " + " + print_hex(disp, 2) + "]";
+    rm_name = rm_table[rm] + "+" + print_hex(disp, 2) + "]";
     // add two when displacement uses two bytes
     info->length += 2;
   } else if (mod == 0x00) {
@@ -128,12 +128,12 @@ void parse_rm_imm(instruction_info *info, uint8_t *byte, int offset) {
     rm_name = rm_table[rm] + "]";
   } else if (mod == 0x02) {
     uint16_t disp = le_16(byte, offset + info->length);
-    rm_name = rm_table[rm] + " + " + print_hex(disp, 2) + "]";
+    rm_name = rm_table[rm] + "+" + print_hex(disp, 2) + "]";
     info->length += 2;
   } else if (mod == 0x01) {
     int8_t disp = (int8_t)byte[offset + info->length];
-    rm_name = rm_table[rm] + (disp < 0 ? " - " : " + ") +
-              print_hex(abs(disp), 2) + "]";
+    rm_name =
+        rm_table[rm] + (disp < 0 ? "-" : "+") + print_hex(abs(disp), 2) + "]";
     info->length += 1;
   }
 
@@ -175,12 +175,12 @@ void parse_rm_imm_no_s(instruction_info *info, uint8_t *byte, int offset) {
     rm_name = rm_table[rm] + "]";
   } else if (mod == 0x02) {
     uint16_t disp = le_16(byte, offset + info->length);
-    rm_name = rm_table[rm] + " + " + print_hex(disp, 2) + "]";
+    rm_name = rm_table[rm] + "+" + print_hex(disp, 2) + "]";
     info->length += 2;
   } else if (mod == 0x01) {
     int8_t disp = (int8_t)byte[offset + info->length];
-    rm_name = rm_table[rm] + (disp < 0 ? " - " : " + ") +
-              print_hex(abs(disp), 2) + "]";
+    rm_name =
+        rm_table[rm] + (disp < 0 ? "-" : "+") + print_hex(abs(disp), 2) + "]";
     info->length += 1;
   }
 
@@ -212,12 +212,12 @@ void parse_rm(instruction_info *info, uint8_t *byte, int offset) {
     rm_name = rm_table[rm] + "]";
   } else if (mod == 0x02) {
     uint16_t disp = le_16(byte, offset + info->length);
-    rm_name = rm_table[rm] + " + " + print_hex(disp, 2) + "]";
+    rm_name = rm_table[rm] + "+" + print_hex(disp, 2) + "]";
     info->length += 2;
   } else if (mod == 0x01) {
     int8_t disp = (int8_t)byte[offset + info->length];
-    rm_name = rm_table[rm] + (disp < 0 ? " - " : " + ") +
-              print_hex(abs(disp), 2) + "]";
+    rm_name =
+        rm_table[rm] + (disp < 0 ? "-" : "+") + print_hex(abs(disp), 2) + "]";
     info->length += 1;
   }
   info->op1 = rm_name;
@@ -238,12 +238,12 @@ void parse_rm_v(instruction_info *info, uint8_t *byte, int offset) {
     rm_name = rm_table[rm] + "]";
   } else if (mod == 0x02) {
     uint16_t disp = le_16(byte, offset + info->length);
-    rm_name = rm_table[rm] + " + " + print_hex(disp, 2) + "]";
+    rm_name = rm_table[rm] + "+" + print_hex(disp, 2) + "]";
     info->length += 2;
   } else if (mod == 0x01) {
     int8_t disp = (int8_t)byte[offset + info->length];
-    rm_name = rm_table[rm] + (disp < 0 ? " - " : " + ") +
-              print_hex(abs(disp), 2) + "]";
+    rm_name =
+        rm_table[rm] + (disp < 0 ? "-" : "+") + print_hex(abs(disp), 2) + "]";
     info->length += 1;
   }
   info->op1 = rm_name;
