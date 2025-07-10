@@ -3,6 +3,8 @@
 #include "utils.hpp"
 #include <cstdint>
 #include <cstring>
+#include <iomanip>
+#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
@@ -25,7 +27,7 @@ typedef struct {
   uint32_t a_syms;
 } header;
 
-int main(int argc, char *argv[], char *env[]) {
+int main(int argc, char *argv[]) {
   FILE *file;
   uint8_t *buffer;
   long byte_size;
@@ -77,76 +79,13 @@ int main(int argc, char *argv[], char *env[]) {
   int data_start = 32 + Header.a_text;
 
   cpu_state_t cpu;
+  // Set cpu state
   init_cpu(&cpu);
-
-  // Set the Stack Segment
-  int env_count = 0;
-  while (env[env_count] != NULL) {
-    env_count++;
-  }
-
-  // for (int i = 0; i < env_count; i++) {
-  //   printf("%s\n", env[i]);
-  // }
-
-  uint16_t ss_addr = cpu.registers[SS];
-
-  uint16_t *addresses =
-      (uint16_t *)malloc((argc + env_count) * sizeof(uint16_t));
-  int addr_index = 0;
-
-  for (int i = 0; i < env_count; i++) {
-    int len = strlen(env[i]) + 1;
-
-    cpu.registers[SP] -= len;
-
-    addresses[addr_index++] = cpu.registers[SP];
-
-    for (int j = 0; j < len; j++) {
-      uint32_t address = (ss_addr << 4) + cpu.registers[SP] + j;
-      cpu.memory->data[address] = env[i][j];
-    }
-  }
-
-  for (int i = 0; i < argc; i++) {
-    int len = strlen(argv[i]) + 1;
-
-    cpu.registers[SP] -= len;
-
-    addresses[addr_index++] = cpu.registers[SP];
-
-    for (int j = 0; j < len; j++) {
-      uint32_t address = (ss_addr << 4) + cpu.registers[SP] + j;
-      cpu.memory->data[address] = argv[i][j];
-    }
-  }
-
-  for (int i = env_count - 1; i >= 0; i--) {
-    cpu.registers[SP] -= 2;
-    uint16_t env_addr = addresses[i];
-
-    uint32_t address = (ss_addr << 4) + cpu.registers[SP];
-    cpu.memory->data[address] = env_addr & 0xFF;
-    cpu.memory->data[address + 1] = env_addr >> 8;
-  }
-
-  cpu.registers[SP] -= 1;
-  uint32_t address = (ss_addr << 4) + cpu.registers[SP];
-  cpu.memory->data[address] = 0;
-
-  for (int i = argc - 1; i >= 0; i--) {
-    cpu.registers[SP] -= 2;
-    uint16_t argv_address = addresses[i];
-
-    uint32_t address = (ss_addr << 4) + cpu.registers[SP];
-    cpu.memory->data[address] = argv_address & 0xFF;
-    cpu.memory->data[address + 1] = argv_address >> 8;
-  }
-
-  cpu.registers[SP] -= 2;
-  uint32_t phys_address = (ss_addr << 4) + cpu.registers[SP];
-  cpu.memory->data[address] = argc & 0xFF;
-  cpu.memory->data[address + 1] = argc >> 8;
+  // Set the stack
+  // Reduce argc by 1, and move argv forward
+  int _argc = argc - 1;
+  char **_argv = argv + 1;
+  init_stack(&cpu, _argc, _argv);
 
   // Grab Text block, store it in memory in CS
   uint16_t text_offset = 0x0000;
@@ -166,12 +105,7 @@ int main(int argc, char *argv[], char *env[]) {
     data_offset++;
   }
 
-  cpu.registers[BX] = 0x0002;
-  cpu.registers[AX] = 0x0003;
-
-  printf("%04x", parse_memory(&cpu, "[AX-1]"));
-
-  // // Go through the text block one by one
+  // Go through the text block one by one
   // for (int offset = text_start; offset < Header.a_text + text_start;) {
   //   // Dissassembler need to fix this messy code
   //   cout << setfill(' ') << setw(6) << left
@@ -185,6 +119,8 @@ int main(int argc, char *argv[], char *env[]) {
   //
   //   offset += result_info.length;
   // }
+
+  printf("%04x", cpu.registers[SP]);
 
   free(buffer);
 

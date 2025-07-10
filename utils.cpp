@@ -99,6 +99,7 @@ uint16_t parse_memory(cpu_state_t *cpu, const string &mem_name) {
   return result;
 }
 
+// Turns out there's already a function called stoi lol
 uint16_t parse_hex_string(const string &hex_str) {
   string clean_hex = hex_str;
 
@@ -117,4 +118,10 @@ string print_hex(int16_t val, int width) {
   std::stringstream stream;
   stream << setfill('0') << setw(width) << std::hex << val;
   return stream.str();
+}
+
+void set_mem(cpu_state_t *cpu, uint16_t segment, uint16_t offset,
+             uint8_t value) {
+  uint32_t physical_addr = (segment << 4) + offset;
+  cpu->memory->data[physical_addr] = value;
 }
