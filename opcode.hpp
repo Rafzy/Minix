@@ -15,6 +15,6 @@ typedef struct {
   int length;
 } instruction_info;
 
-instruction_info analyze_opcode(uint8_t *byte, int *offset);
+instruction_info analyze_opcode(uint8_t *byte, int offset);
 
 #endif // !OPCODE_H

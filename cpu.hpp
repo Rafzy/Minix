@@ -32,5 +32,5 @@ void exec_lea(cpu_state_t *cpu, string op1, string op2);
 void exec_add(cpu_state_t *cpu, string op1, string op2);
 void exec_cmp(cpu_state_t *cpu, string op1, string op2);
 void exec_jnb(cpu_state_t *cpu, string op1);
-
+void exec_test(cpu_state_t *cpu, string op1, string op2);
 #endif // !CPU_HPP

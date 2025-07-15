@@ -3,6 +3,7 @@
 #include "registers.hpp"
 #include "utils.hpp"
 #include <cstring>
+#include <iostream>
 
 types detect_type(const string &name) {
   if (name[0] == '[' && name.back() == ']') {
@@ -213,7 +214,9 @@ void exec_add(cpu_state_t *cpu, string op1, string op2) {
     uint16_t src_index = parse_reg_name(op2);
     uint16_t total = cpu->registers[src_index] + cpu->registers[dst_index];
 
+    // update flags
     (total == 0) ? cpu->registers[ZF] = 1 : cpu->registers[ZF] = 0;
+    ((total >> 15) == 1) ? cpu->registers[SF] = 1 : cpu->registers[SF] = 0;
 
     set_reg16(cpu, dst_index, total);
   }
@@ -233,6 +236,17 @@ void exec_cmp(cpu_state_t *cpu, string op1, string op2) {
       cpu->registers[CF] = 0;
     }
   }
+
+  if (op1_type == REGISTER && op2_type == IMMEDIATE) {
+    uint16_t op1_index = parse_reg_name(op1);
+    uint16_t op2_val = parse_hex_string(op2);
+
+    if (get_reg16(cpu, op1_index) < op2_val) {
+      cpu->registers[CF] = 1;
+    } else if (get_reg16(cpu, op1_index) >= op2_val) {
+      cpu->registers[CF] = 0;
+    }
+  }
 }
 
 void exec_jnb(cpu_state_t *cpu, string op1) {
@@ -240,5 +254,19 @@ void exec_jnb(cpu_state_t *cpu, string op1) {
 
   if (cpu->registers[CF] == 0) {
     cpu->registers[IP] += op_val;
+  }
+}
+
+void exec_test(cpu_state_t *cpu, string op1, string op2) {
+  types op1_type = detect_type(op1);
+  types op2_type = detect_type(op2);
+
+  if (op1_type == REGISTER && op2_type == IMMEDIATE) {
+    uint16_t op1_index = parse_reg_name(op1);
+    uint16_t op2_index = parse_reg_name(op2);
+    uint16_t result = get_reg16(cpu, op1_index) & get_reg16(cpu, op2_index);
+    // Update Flags
+    cpu->registers[CF] = 0;
+    result == 0 ? cpu->registers[ZF] = 1 : cpu->registers[ZF] = 0;
   }
 }

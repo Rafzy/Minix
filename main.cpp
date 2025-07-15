@@ -105,20 +105,49 @@ int main(int argc, char *argv[]) {
     data_offset++;
   }
 
+  bool dissassemble = false;
+  bool log = true;
+
+  while (cpu.registers[IP] < Header.a_text) {
+    uint32_t inst_addr = (cs_addr << 4) + cpu.registers[IP];
+
+    instruction_info result_info = analyze_opcode(cpu.memory->data, inst_addr);
+
+    if (dissassemble) {
+      cout << setfill(' ') << setw(6) << left
+           << print_hex((uint16_t)(cpu.registers[IP]), 4) + ":";
+      print_result(result_info);
+    }
+    if (log) {
+      print_cpu_log(&cpu);
+      print_result(result_info);
+    }
+
+    if (!dissassemble) {
+      exec_parsed(&cpu, result_info);
+    }
+    cpu.registers[IP] += result_info.length;
+
+    if (!cpu.running) {
+      printf("BREAK\n");
+      break;
+    }
+  }
+
   // Go through the text block one by one
-  // for (int offset = text_start; offset < Header.a_text + text_start;) {
-  //   // Dissassembler need to fix this messy code
-  //   cout << setfill(' ') << setw(6) << left
-  //        << print_hex((uint16_t)(offset - text_start), 4) + ":";
+  //   for (int offset = text_start; offset < Header.a_text + text_start;) {
+  //     // Dissassembler need to fix this messy code
+  // cout << setfill(' ') << setw(6) << left
+  //      << print_hex((uint16_t)(offset - text_start), 4) + ":";
   //
-  //   instruction_info result_info = analyze_opcode(buffer, &offset);
+  //     instruction_info result_info = analyze_opcode(buffer, offset);
   //
-  //   print_result(result_info);
+  //     print_result(result_info);
+  //     // exec_parsed(&cpu, result_info);
   //
-  //   exec_parsed(&cpu, result_info);
-  //
-  //   offset += result_info.length;
-  // }
+  //     // offset += result_info.length;
+  //     offset += result_info.length;
+  //   }
 
   free(buffer);
 
