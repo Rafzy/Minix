@@ -20,6 +20,7 @@ uint16_t le_16(uint8_t *bytes, int offset) {
   return bytes[offset] | bytes[offset + 1] << 8;
 }
 
+// Dissassembler function
 void print_result(instruction_info info) {
   cout << info.mnemonic << " " << (info.op1 != "" ? info.op1 : "")
        << (info.op2 != "" ? ", " + info.op2 : "")
@@ -124,4 +125,44 @@ void set_mem(cpu_state_t *cpu, uint16_t segment, uint16_t offset,
              uint8_t value) {
   uint32_t physical_addr = (segment << 4) + offset;
   cpu->memory->data[physical_addr] = value;
+}
+
+uint16_t get_mem_16(cpu_state_t *cpu, uint16_t segment, uint16_t offset) {
+  uint32_t physical_addr = (segment << 4) + offset;
+  return le_16(cpu->memory->data, physical_addr);
+}
+
+// Debugging functions
+void print_cpu_state_header() {
+  printf("AX   BX   CX   DX   SP   BP   SI   DI   FLAGS IP\n");
+}
+
+void print_flags(cpu_state_t *cpu) {
+  printf("%c%c%c%c",
+         cpu->registers[OF] ? 'O' : '-', // Overflow
+         cpu->registers[SF] ? 'S' : '-', // Sign
+         cpu->registers[ZF] ? 'Z' : '-', // Zero
+         cpu->registers[CF] ? 'C' : '-'  // Carry
+  );
+}
+
+void print_cpu_log(cpu_state_t *cpu) {
+  static int first_call = 1;
+
+  if (first_call) {
+    print_cpu_state_header();
+    first_call = 0;
+  }
+
+  printf("%04x %04x %04x %04x %04x %04x %04x %04x ", cpu->registers[AX],
+         cpu->registers[BX], cpu->registers[CX], cpu->registers[DX],
+         cpu->registers[SP], cpu->registers[BP], cpu->registers[SI],
+         cpu->registers[DI]);
+
+  print_flags(cpu);
+  printf(" ");
+
+  printf("%04x:%04x", cpu->registers[IP], 0x0000);
+
+  printf("\n");
 }

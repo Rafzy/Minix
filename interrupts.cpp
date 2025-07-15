@@ -20,8 +20,11 @@ void exec_int20(cpu_state_t *cpu) {
   msg.m5 = le_16(cpu->memory->data, addr + 12);
   msg.m6 = le_16(cpu->memory->data, addr + 14);
 
+  // Syscall cases
   switch (msg.syscall_num) {
   case 1: {
+    // TODO:
+    // Do the syscall exit
     printf("EXIT\n");
   }
   case 4: {

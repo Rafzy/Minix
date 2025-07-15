@@ -20,5 +20,7 @@ string print_hex(int16_t val, int width = 4);
 void print_result(instruction_info info);
 
 void set_mem(cpu_state_t *cpu, uint16_t segment, uint16_t offset, uint8_t val);
+uint16_t get_mem_16(cpu_state_t *cpu, uint16_t segment, uint16_t offset);
 
+void print_cpu_log(cpu_state_t *cpu);
 #endif // !UTILS_H

@@ -120,8 +120,6 @@ int main(int argc, char *argv[]) {
   //   offset += result_info.length;
   // }
 
-  printf("%04x", cpu.registers[SP]);
-
   free(buffer);
 
   return 0;
