@@ -260,7 +260,8 @@ void parse_rm_v(instruction_info *info, uint8_t *byte, int offset) {
 void parse_dir_w_seg(instruction_info *info, uint8_t *byte, int offset) {
   info->length = 3;
   uint16_t disp = le_16(byte, offset + 1);
-  uint16_t ea = disp + offset + info->length - 32;
+  // uint16_t ea = disp + offset + info->length - 32;
+  uint16_t ea = disp + offset + info->length;
   info->op1 = print_hex(ea, 4);
 }
 

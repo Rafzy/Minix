@@ -134,6 +134,8 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  // printf("%04x", get_mem_16(&cpu, cpu.registers[SS], 0xffae));
+
   // Go through the text block one by one
   //   for (int offset = text_start; offset < Header.a_text + text_start;) {
   //     // Dissassembler need to fix this messy code

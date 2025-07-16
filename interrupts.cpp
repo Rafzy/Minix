@@ -7,7 +7,7 @@
 void exec_int20(cpu_state_t *cpu) {
   // Handle system calls
   uint16_t virt_addr = cpu->registers[BX];
-  uint16_t data_segment = cpu->registers[DS];
+  uint16_t data_segment = cpu->registers[SS];
   message_t msg;
 
   uint32_t addr = (data_segment << 4) + virt_addr;
@@ -20,6 +20,8 @@ void exec_int20(cpu_state_t *cpu) {
   msg.m5 = le_16(cpu->memory->data, addr + 12);
   msg.m6 = le_16(cpu->memory->data, addr + 14);
 
+  cpu->registers[AX] = 0;
+
   // Syscall cases
   switch (msg.syscall_num) {
   case 1: {
@@ -28,12 +30,12 @@ void exec_int20(cpu_state_t *cpu) {
     printf("EXIT\n");
   }
   case 4: {
-    uint32_t write_addr = (data_segment << 4) + msg.m4;
+    uint32_t write_addr = (cpu->registers[DS] << 4) + msg.m4;
     sys_write(write_addr, msg.m2, cpu->memory);
     break;
   }
   default: {
-    printf("ERROR: SYSCALL NOT FOUND");
+    printf("ERROR: SYSCALL NOT FOUND\n");
     break;
   }
   }

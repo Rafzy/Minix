@@ -75,7 +75,8 @@ uint16_t parse_memory(cpu_state_t *cpu, const string &mem_name) {
 
           if (isdigit(token[0])) {
             try {
-              int imm_val = stoi(token);
+              // int imm_val = stoi(token);
+              int imm_val = parse_hex_string(token);
               result += sign * imm_val;
             } catch (const exception &e) {
               throw invalid_argument("Invalid imm value: " + token);
@@ -127,6 +128,24 @@ void set_mem(cpu_state_t *cpu, uint16_t segment, uint16_t offset,
   cpu->memory->data[physical_addr] = value;
 }
 
+void set_mem16(cpu_state_t *cpu, uint16_t segment, uint16_t offset,
+               uint16_t value) {
+  uint32_t physical_addr = (segment << 4) + offset;
+  cpu->memory->data[physical_addr] = value & 0xFF;
+  cpu->memory->data[physical_addr + 1] = value >> 8;
+}
+
+void push_stack(cpu_state_t *cpu, uint16_t value) {
+  cpu->registers[SP] -= 2;
+  set_mem16(cpu, cpu->registers[SS], cpu->registers[SP], value);
+}
+
+uint16_t pop_stack(cpu_state_t *cpu) {
+  uint16_t pop_val = get_mem_16(cpu, cpu->registers[SS], cpu->registers[SP]);
+  cpu->registers[SP] += 2;
+  return pop_val;
+}
+
 uint16_t get_mem_16(cpu_state_t *cpu, uint16_t segment, uint16_t offset) {
   uint32_t physical_addr = (segment << 4) + offset;
   return le_16(cpu->memory->data, physical_addr);
@@ -164,5 +183,6 @@ void print_cpu_log(cpu_state_t *cpu) {
 
   printf("%04x:%04x", cpu->registers[IP], 0x0000);
 
-  printf("\n");
+  printf("    ");
+  // printf("\n");
 }
