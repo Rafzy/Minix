@@ -6,13 +6,40 @@
 #include <cstring>
 #include <iostream>
 
+// types detect_type(const string &name) {
+//   if (name[0] == '[' && name.back() == ']') {
+//     return MEMORY;
+//   } else if (name.find_first_not_of("0123456789ABCDEFabcdef") ==
+//   string::npos) {
+//     return IMMEDIATE;
+//   } else {
+//     return REGISTER;
+//   }
+// }
+
 types detect_type(const string &name) {
   if (name[0] == '[' && name.back() == ']') {
+    // Check if the memory reference contains 'L' or 'H'
+    // if (name.find('L') != string::npos) {
+    //   return MEMORY_LOW;
+    // } else if (name.find('H') != string::npos) {
+    //   return MEMORY_HIGH;
+    // } else {
+    //   return MEMORY;
+    // }
     return MEMORY;
   } else if (name.find_first_not_of("0123456789ABCDEFabcdef") == string::npos) {
     return IMMEDIATE;
   } else {
-    return REGISTER;
+    if (name.find('L') != string::npos) {
+      return REGISTER_LOW;
+    } else if (name.find('H') != string::npos) {
+      return REGISTER_HIGH;
+    } else {
+
+      return REGISTER;
+    }
+    // return REGISTER;
   }
 }
 
@@ -111,10 +138,43 @@ uint16_t get_reg16(cpu_state_t *cpu, uint8_t reg) {
   return cpu->registers[reg];
 }
 
+uint8_t get_reg8_l(cpu_state_t *cpu, uint8_t reg) {
+  if (reg > 7)
+    return 0;
+  return cpu->registers[reg] & 0xFF;
+}
+
+uint8_t get_reg8_h(cpu_state_t *cpu, uint8_t reg) {
+  if (reg > 7)
+    return 0;
+
+  return cpu->registers[reg] >> 8;
+}
+
 void set_reg16(cpu_state_t *cpu, uint8_t reg, uint16_t val) {
   if (reg > 7)
     return;
   cpu->registers[reg] = val;
+}
+
+void set_reg8_l(cpu_state_t *cpu, uint8_t reg, uint8_t val) {
+  if (reg > 7)
+    return;
+
+  uint16_t reg_val = cpu->registers[reg];
+  reg_val = (reg_val & 0xFF00) | val;
+
+  cpu->registers[reg] = reg_val;
+}
+
+void set_reg8_h(cpu_state_t *cpu, uint8_t reg, uint8_t val) {
+  if (reg > 7)
+    return;
+
+  uint16_t reg_val = cpu->registers[reg];
+  reg_val = (reg_val & 0x00FF) | (val << 4);
+
+  cpu->registers[reg] = reg_val;
 }
 
 void exec_parsed(cpu_state_t *cpu, instruction_info &info) {
@@ -138,6 +198,10 @@ void exec_parsed(cpu_state_t *cpu, instruction_info &info) {
     exec_jne(cpu, info.op1);
   } else if (info.mnemonic == "je") {
     exec_je(cpu, info.op1);
+  } else if (info.mnemonic == "jnl") {
+    exec_jnl(cpu, info.op1);
+  } else if (info.mnemonic == "jl") {
+    exec_jl(cpu, info.op1);
   } else if (info.mnemonic == "push") {
     exec_push(cpu, info.op1);
   } else if (info.mnemonic == "call") {
@@ -154,6 +218,14 @@ void exec_parsed(cpu_state_t *cpu, instruction_info &info) {
     exec_ret(cpu);
   } else if (info.mnemonic == "or") {
     exec_or(cpu, info.op1, info.op2);
+  } else if (info.mnemonic == "dec") {
+    exec_dec(cpu, info.op1);
+  } else if (info.mnemonic == "cbw") {
+    exec_cbw(cpu);
+  } else if (info.mnemonic == "inc") {
+    exec_inc(cpu, info.op1);
+  } else if (info.mnemonic == "and") {
+    exec_and(cpu, info.op1, info.op2);
   }
 
   else {
@@ -183,8 +255,14 @@ void exec_mov(cpu_state_t *cpu, string dst, string src) {
   if (dst_type == REGISTER && src_type == MEMORY) {
     uint8_t reg_dst = parse_reg_name(dst);
     uint16_t mem_addr = parse_memory(cpu, src);
-    uint32_t full_addr = (cpu->registers[SS] << 4) + mem_addr;
-    uint16_t mem_val = le_16(cpu->memory->data, full_addr);
+
+    uint8_t segment;
+    (mem_addr > 0xf000) ? segment = SS : segment = DS;
+
+    uint16_t mem_val = get_mem_16(cpu, cpu->registers[segment], mem_addr);
+
+    printf("FROM MOV ADDR: %04x\n", mem_addr);
+    printf("FROM MOV VAL: %04x\n", mem_val);
 
     set_reg16(cpu, reg_dst, mem_val);
   }
@@ -194,8 +272,53 @@ void exec_mov(cpu_state_t *cpu, string dst, string src) {
     uint16_t mem_addr = parse_memory(cpu, dst);
     uint16_t src_val = get_reg16(cpu, reg_src);
 
-    set_mem(cpu, cpu->registers[SS], mem_addr, src_val & 0xff);
-    set_mem(cpu, cpu->registers[SS], mem_addr + 1, src_val >> 8);
+    uint8_t segment;
+    (mem_addr > 0xf000) ? segment = SS : segment = DS;
+
+    // set_mem(cpu, cpu->registers[segment], mem_addr, src_val & 0xff);
+    // set_mem(cpu, cpu->registers[segment], mem_addr + 1, src_val >> 8);
+    set_mem16(cpu, cpu->registers[segment], mem_addr, src_val);
+    printf("MOV ADDR: %04x\n", mem_addr);
+    printf("RESULT AFTER MOV MEMORY: %04x\n",
+           get_mem_16(cpu, cpu->registers[segment], mem_addr));
+  }
+
+  if (dst_type == REGISTER_LOW && src_type == IMMEDIATE) {
+    uint8_t dst_index = parse_reg_name(dst);
+    uint8_t src_val = parse_hex_string(src);
+
+    set_reg8_l(cpu, dst_index, src_val);
+  }
+
+  if (dst_type == REGISTER_HIGH && src_type == IMMEDIATE) {
+    uint8_t dst_index = parse_reg_name(dst);
+    uint8_t src_val = parse_hex_string(src);
+
+    set_reg8_h(cpu, dst_index, src_val);
+  }
+
+  if (dst_type == REGISTER_LOW && src_type == MEMORY) {
+    uint8_t dst_index = parse_reg_name(dst);
+    uint16_t src_addr = parse_memory(cpu, src);
+
+    uint8_t segment;
+    (src_addr > 0xf000) ? segment = SS : segment = DS;
+
+    uint8_t src_val = get_mem_8(cpu, cpu->registers[segment], src_addr);
+
+    set_reg8_l(cpu, dst_index, src_val);
+  }
+
+  if (dst_type == REGISTER_HIGH && src_type == MEMORY) {
+    uint8_t dst_index = parse_reg_name(dst);
+    uint16_t src_addr = parse_memory(cpu, src);
+
+    uint8_t segment;
+    (src_addr > 0xf000) ? segment = SS : segment = DS;
+
+    uint8_t src_val = get_mem_8(cpu, segment, src_addr);
+
+    set_reg8_h(cpu, dst_index, src_val);
   }
 };
 
@@ -257,19 +380,27 @@ void exec_lea(cpu_state_t *cpu, string op1, string op2) {
 void exec_add(cpu_state_t *cpu, string op1, string op2) {
   types op1_type = detect_type(op1);
   types op2_type = detect_type(op2);
+  uint16_t total;
 
   if (op1_type == REGISTER && op2_type == REGISTER) {
     uint16_t dst_index = parse_reg_name(op1);
     uint16_t src_index = parse_reg_name(op2);
-    uint16_t total = cpu->registers[src_index] + cpu->registers[dst_index];
-
-    // Update Z Flag
-    (total == 0) ? cpu->registers[ZF] = 1 : cpu->registers[ZF] = 0;
-    // Update S Flag
-    ((total >> 15) == 1) ? cpu->registers[SF] = 1 : cpu->registers[SF] = 0;
+    total = cpu->registers[src_index] + cpu->registers[dst_index];
 
     set_reg16(cpu, dst_index, total);
   }
+  if (op1_type == REGISTER && op2_type == IMMEDIATE) {
+    uint8_t op1_index = parse_reg_name(op1);
+    uint16_t op1_val = cpu->registers[op1_index];
+    uint16_t op2_val = parse_hex_string(op2);
+    total = op1_val + op2_val;
+
+    cpu->registers[op1_index] = total;
+  }
+  // Update Z Flag
+  (total == 0) ? cpu->registers[ZF] = 1 : cpu->registers[ZF] = 0;
+  // Update S Flag
+  ((total >> 15) == 1) ? cpu->registers[SF] = 1 : cpu->registers[SF] = 0;
 }
 
 void exec_sub(cpu_state_t *cpu, string op1, string op2) {
@@ -295,56 +426,72 @@ void exec_sub(cpu_state_t *cpu, string op1, string op2) {
 void exec_cmp(cpu_state_t *cpu, string op1, string op2) {
   types op1_type = detect_type(op1);
   types op2_type = detect_type(op2);
+  uint16_t op1_val;
+  uint16_t op2_val;
 
   if (op1_type == REGISTER && op2_type == REGISTER) {
     uint16_t eax_index = parse_reg_name(op1);
     uint16_t ebx_index = parse_reg_name(op2);
 
-    if (get_reg16(cpu, eax_index) < get_reg16(cpu, ebx_index)) {
-      cpu->registers[CF] = 1;
-    } else if (get_reg16(cpu, eax_index) >= get_reg16(cpu, ebx_index)) {
-      cpu->registers[CF] = 0;
-    }
+    op1_val = get_reg16(cpu, eax_index);
+    op2_val = get_reg16(cpu, ebx_index);
 
-    if (cpu->registers[eax_index] - cpu->registers[ebx_index] == 0) {
-      cpu->registers[ZF] = 1;
-    } else {
-      cpu->registers[ZF] = 0;
-    }
+    // if (get_reg16(cpu, eax_index) < get_reg16(cpu, ebx_index)) {
+    //   cpu->registers[CF] = 1;
+    // } else if (get_reg16(cpu, eax_index) >= get_reg16(cpu, ebx_index)) {
+    //   cpu->registers[CF] = 0;
+    // }
+    //
+    // if (cpu->registers[eax_index] - cpu->registers[ebx_index] == 0) {
+    //   cpu->registers[ZF] = 1;
+    // } else {
+    //   cpu->registers[ZF] = 0;
+    // }
   }
 
   if (op1_type == REGISTER && op2_type == IMMEDIATE) {
     uint16_t op1_index = parse_reg_name(op1);
-    uint16_t op2_val = parse_hex_string(op2);
+    op1_val = get_reg16(cpu, op1_index);
+    op2_val = parse_hex_string(op2);
 
-    if (get_reg16(cpu, op1_index) < op2_val) {
-      cpu->registers[CF] = 1;
-    } else if (get_reg16(cpu, op1_index) >= op2_val) {
-      cpu->registers[CF] = 0;
-    }
-    if (cpu->registers[op1_index] - op2_val == 0) {
-      cpu->registers[ZF] = 1;
-    } else {
-      cpu->registers[ZF] = 0;
-    }
+    // if (get_reg16(cpu, op1_index) < op2_val) {
+    //   cpu->registers[CF] = 1;
+    // } else if (get_reg16(cpu, op1_index) >= op2_val) {
+    //   cpu->registers[CF] = 0;
+    // }
+    // if (cpu->registers[op1_index] - op2_val == 0) {
+    //   cpu->registers[ZF] = 1;
+    // } else {
+    //   cpu->registers[ZF] = 0;
+    // }
   }
 
   if (op1_type == MEMORY && op2_type == IMMEDIATE) {
     uint16_t mem_op1 = parse_memory(cpu, op1);
-    uint16_t op2_val = parse_hex_string(op2);
-    uint32_t full_addr = (cpu->registers[DS] << 4) + mem_op1;
-    uint16_t op1_val = le_16(cpu->memory->data, full_addr);
 
-    if (op1_val < op2_val) {
-      cpu->registers[CF] = 1;
-    } else if (op1_val >= op2_val) {
-      cpu->registers[CF] = 0;
-    }
-    if (op1_val - op2_val == 0) {
-      cpu->registers[ZF] = 1;
-    } else {
-      cpu->registers[ZF] = 0;
-    }
+    uint8_t segment;
+    (mem_op1 > 0xf000) ? segment = SS : segment = DS;
+
+    op2_val = parse_hex_string(op2);
+    op1_val = get_mem_16(cpu, cpu->registers[segment], mem_op1);
+
+    printf("CMP MEM VAL ADDRESS: %04x\n", mem_op1);
+    printf("CMP MEM VAL: %04x\n", op1_val);
+  }
+  if (op1_val < op2_val) {
+    cpu->registers[CF] = 1;
+  } else if (op1_val >= op2_val) {
+    cpu->registers[CF] = 0;
+  }
+  if (op1_val - op2_val == 0) {
+    cpu->registers[ZF] = 1;
+  } else {
+    cpu->registers[ZF] = 0;
+  }
+  if ((op1_val - op2_val) >> 15 == 1) {
+    cpu->registers[SF] = 1;
+  } else {
+    cpu->registers[SF] = 0;
   }
 }
 
@@ -359,24 +506,54 @@ void exec_jnb(cpu_state_t *cpu, string op1) {
 void exec_test(cpu_state_t *cpu, string op1, string op2) {
   types op1_type = detect_type(op1);
   types op2_type = detect_type(op2);
+  uint16_t result;
 
   if (op1_type == REGISTER && op2_type == IMMEDIATE) {
     uint16_t op1_index = parse_reg_name(op1);
-    uint16_t op2_index = parse_reg_name(op2);
-    uint16_t result = get_reg16(cpu, op1_index) & get_reg16(cpu, op2_index);
-    // Update Flags
-    cpu->registers[CF] = 0;
-    result == 0 ? cpu->registers[ZF] = 1 : cpu->registers[ZF] = 0;
-    // Update S Flag
-    (result >> 15) == 1 ? cpu->registers[SF] = 1 : cpu->registers[SF] = 0;
+    // uint16_t op2_index = parse_reg_name(op2);
+    uint16_t op2_val = parse_hex_string(op2);
+    result = get_reg16(cpu, op1_index) & op2_val;
   }
+  if (op1_type == REGISTER_LOW && op2_type == IMMEDIATE) {
+    uint8_t op1_index = parse_reg_name(op1);
+    uint8_t op1_val = get_reg8_l(cpu, op1_index);
+    uint8_t op2_val = parse_hex_string(op2);
+
+    result = op1_val & op2_val;
+  }
+  if (op1_type == REGISTER_HIGH && op2_type == IMMEDIATE) {
+    uint8_t op1_index = parse_reg_name(op1);
+    uint8_t op1_val = get_reg8_h(cpu, op1_index);
+    uint8_t op2_val = parse_hex_string(op2);
+
+    result = op1_val & op2_val;
+  }
+  if (op1_type == MEMORY && op2_type == IMMEDIATE) {
+    uint16_t op1_addr = parse_memory(cpu, op1);
+    uint16_t op2_val = parse_hex_string(op2);
+
+    uint8_t segment;
+    (op1_addr > 0xf000) ? segment = SS : segment = DS;
+    uint16_t op1_val = get_mem_16(cpu, cpu->registers[segment], op1_addr);
+
+    printf("TEST MEM ADDR: %04x\n", op1_addr);
+    printf("TEST MEM VAL: %04x\n", op1_val);
+    result = op1_val & op2_val;
+  }
+  // Update C Flage
+  cpu->registers[CF] = 0;
+  // Update Z Flag
+  result == 0 ? cpu->registers[ZF] = 1 : cpu->registers[ZF] = 0;
+  // Update S Flag
+  (result >> 15) == 1 ? cpu->registers[SF] = 1 : cpu->registers[SF] = 0;
 }
 
 void exec_jne(cpu_state_t *cpu, string op1) {
   uint16_t op1_val = parse_hex_string(op1);
 
   if (cpu->registers[ZF] == 0) {
-    cpu->registers[IP] += op1_val;
+    cpu->registers[IP] = op1_val;
+    cpu->registers[IP] -= 2;
   }
 }
 
@@ -384,6 +561,24 @@ void exec_je(cpu_state_t *cpu, string op1) {
   uint16_t op1_val = parse_hex_string(op1);
 
   if (cpu->registers[ZF] == 1) {
+    cpu->registers[IP] = op1_val;
+    cpu->registers[IP] -= 2;
+  }
+}
+
+void exec_jnl(cpu_state_t *cpu, string op1) {
+  uint16_t op1_val = parse_hex_string(op1);
+
+  if (cpu->registers[OF] == cpu->registers[SF]) {
+    cpu->registers[IP] = op1_val;
+    cpu->registers[IP] -= 2;
+  }
+}
+
+void exec_jl(cpu_state_t *cpu, string op1) {
+  uint16_t op1_val = parse_hex_string(op1);
+
+  if (cpu->registers[OF] != cpu->registers[SF]) {
     cpu->registers[IP] = op1_val;
     cpu->registers[IP] -= 2;
   }
@@ -441,4 +636,62 @@ void exec_pop(cpu_state_t *cpu, string op1) {
 void exec_ret(cpu_state_t *cpu) {
   cpu->registers[IP] = pop_stack(cpu);
   cpu->registers[IP] -= 1;
+}
+
+void exec_dec(cpu_state_t *cpu, string op1) {
+  types op1_type = detect_type(op1);
+
+  if (op1_type == REGISTER) {
+    uint8_t op1_index = parse_reg_name(op1);
+    cpu->registers[op1_index] -= 1;
+    (cpu->registers[op1_index] >> 15 == 1) ? cpu->registers[SF] = 1
+                                           : cpu->registers[SF] = 0;
+  }
+}
+
+void exec_cbw(cpu_state_t *cpu) {
+  // IDK WHAT TO DO HERE
+}
+
+void exec_inc(cpu_state_t *cpu, string op1) {
+  types op1_type = detect_type(op1);
+  uint16_t result;
+
+  if (op1_type == MEMORY) {
+    uint16_t op1_mem = parse_memory(cpu, op1);
+
+    uint8_t segment;
+    op1_mem > 0xf000 ? segment = SS : segment = DS;
+
+    uint16_t op1_val = get_mem_16(cpu, cpu->registers[segment], op1_mem);
+    result = op1_val + 1;
+
+    set_mem16(cpu, cpu->registers[segment], op1_mem, result);
+  }
+
+  result == 0 ? cpu->registers[ZF] = 1 : cpu->registers[ZF] = 0;
+  (result >> 15) == 1 ? cpu->registers[SF] = 1 : cpu->registers[SF] = 0;
+}
+
+void exec_and(cpu_state_t *cpu, string op1, string op2) {
+  types op1_type = detect_type(op1);
+  types op2_type = detect_type(op2);
+  uint16_t result;
+
+  if (op1_type == MEMORY && op2_type == IMMEDIATE) {
+    uint16_t op1_addr = parse_memory(cpu, op1);
+    uint16_t op2_val = parse_hex_string(op2);
+
+    uint8_t segment;
+    (op1_addr > 0xf000) ? segment = SS : segment = DS;
+    uint16_t op1_val = get_mem_16(cpu, cpu->registers[segment], op1_addr);
+
+    result = op1_val & op2_val;
+    set_mem16(cpu, segment, op1_addr, result);
+  }
+
+  cpu->registers[OF] = 0;
+  cpu->registers[CF] = 0;
+  (result == 0) ? cpu->registers[ZF] = 1 : cpu->registers[ZF] = 0;
+  (result >> 15) == 1 ? cpu->registers[SF] = 1 : cpu->registers[SF] = 0;
 }

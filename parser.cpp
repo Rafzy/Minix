@@ -31,11 +31,13 @@ void parse_mod_reg_rm(instruction_info *info, uint8_t *byte, int offset) {
     // add two when displacement uses two bytes
     info->length += 2;
   } else if (mod == 0x00) {
-    rm_name = rm_table[rm] + "]";
     if (rm == 0x06) {
       uint16_t disp = le_16(byte, offset + info->length);
       rm_name = "[" + print_hex(disp, 4) + "]";
       info->length += 2;
+    } else {
+
+      rm_name = rm_table[rm] + "]";
     }
   }
 
@@ -74,7 +76,14 @@ void parse_mod_reg_rm_nodw(instruction_info *info, uint8_t *byte, int offset) {
     // add two when displacement uses two bytes
     info->length += 2;
   } else if (mod == 0x00) {
-    rm_name = rm_table[rm] + "]";
+    if (rm == 0x06) {
+      uint16_t disp = le_16(byte, offset + info->length);
+      rm_name = "[" + print_hex(disp, 4) + "]";
+      info->length += 2;
+    } else {
+
+      rm_name = rm_table[rm] + "]";
+    }
   }
 
   info->op1 = reg_name;
@@ -125,7 +134,13 @@ void parse_rm_imm(instruction_info *info, uint8_t *byte, int offset) {
   if (mod == 0x03) {
     rm_name = reg_table[1][rm];
   } else if (mod == 0x00) {
-    rm_name = rm_table[rm] + "]";
+    if (rm == 0x06) {
+      uint16_t disp = le_16(byte, offset + info->length);
+      rm_name = "[" + print_hex(disp, 4) + "]";
+      info->length += 2;
+    } else {
+      rm_name = rm_table[rm] + "]";
+    }
   } else if (mod == 0x02) {
     uint16_t disp = le_16(byte, offset + info->length);
     rm_name = rm_table[rm] + "+" + print_hex(disp, 2) + "]";
@@ -172,7 +187,13 @@ void parse_rm_imm_no_s(instruction_info *info, uint8_t *byte, int offset) {
   if (mod == 0x03) {
     rm_name = reg_table[w][rm];
   } else if (mod == 0x00) {
-    rm_name = rm_table[rm] + "]";
+    if (rm == 0x06) {
+      uint16_t disp = le_16(byte, offset + info->length);
+      rm_name = "[" + print_hex(disp, 2) + "]";
+      info->length += 2;
+    } else {
+      rm_name = rm_table[rm] + "]";
+    }
   } else if (mod == 0x02) {
     uint16_t disp = le_16(byte, offset + info->length);
     rm_name = rm_table[rm] + "+" + print_hex(disp, 2) + "]";
@@ -209,7 +230,13 @@ void parse_rm(instruction_info *info, uint8_t *byte, int offset) {
   if (mod == 0x03) {
     rm_name = reg_table[w][rm];
   } else if (mod == 0x00) {
-    rm_name = rm_table[rm] + "]";
+    if (rm == 0x06) {
+      uint16_t disp = le_16(byte, offset + info->length);
+      rm_name = "[" + print_hex(disp, 4) + "]";
+      info->length += 2;
+    } else {
+      rm_name = rm_table[rm] + "]";
+    }
   } else if (mod == 0x02) {
     uint16_t disp = le_16(byte, offset + info->length);
     rm_name = rm_table[rm] + "+" + print_hex(disp, 2) + "]";
@@ -235,7 +262,13 @@ void parse_rm_v(instruction_info *info, uint8_t *byte, int offset) {
   if (mod == 0x03) {
     rm_name = reg_table[w][rm];
   } else if (mod == 0x00) {
-    rm_name = rm_table[rm] + "]";
+    if (rm == 0x06) {
+      uint16_t disp = le_16(byte, offset + info->length);
+      rm_name = "[" + print_hex(disp, 4) + "]";
+      info->length += 2;
+    } else {
+      rm_name = rm_table[rm] + "]";
+    }
   } else if (mod == 0x02) {
     uint16_t disp = le_16(byte, offset + info->length);
     rm_name = rm_table[rm] + "+" + print_hex(disp, 2) + "]";

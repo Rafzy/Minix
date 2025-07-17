@@ -7,7 +7,11 @@
 void exec_int20(cpu_state_t *cpu) {
   // Handle system calls
   uint16_t virt_addr = cpu->registers[BX];
-  uint16_t data_segment = cpu->registers[SS];
+
+  uint8_t segment;
+  (virt_addr > 0xff00) ? segment = SS : segment = DS;
+
+  uint16_t data_segment = cpu->registers[segment];
   message_t msg;
 
   uint32_t addr = (data_segment << 4) + virt_addr;
@@ -27,10 +31,16 @@ void exec_int20(cpu_state_t *cpu) {
   case 1: {
     // TODO:
     // Do the syscall exit
-    printf("EXIT\n");
+    // printf("EXIT\n");
+    cpu->running = false;
   }
   case 4: {
-    uint32_t write_addr = (cpu->registers[DS] << 4) + msg.m4;
+    // printf("%04x %04x %04x %04x %04x %04x %04x %04x\n", msg.process_id,
+    //        msg.syscall_num, msg.m1, msg.m2, msg.m3, msg.m4, msg.m5, msg.m6);
+
+    uint8_t segment;
+    msg.m4 > 0xff00 ? segment = SS : segment = DS;
+    uint32_t write_addr = (cpu->registers[segment] << 4) + msg.m4;
     sys_write(write_addr, msg.m2, cpu->memory);
     break;
   }

@@ -6,7 +6,7 @@
 #define WRITE 4
 
 void sys_write(uint32_t address, int length, memory_t *memory) {
-  for (uint32_t i = address; i < address + 6; i++) {
+  for (uint32_t i = address; i < address + length; i++) {
     printf("%c", memory->data[i]);
   }
 }

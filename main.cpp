@@ -96,6 +96,11 @@ int main(int argc, char *argv[]) {
     text_offset++;
   }
 
+  // for (int i = 0; i < Header.a_text; i++) {
+  //   uint32_t addr = ((cpu.registers[CS] << 4) + i);
+  //   printf("%02x ", cpu.memory->data[addr]);
+  // }
+
   // Grab Data block, store it in memory in DS
   uint16_t data_offset = 0x0000;
   uint16_t ds_addr = cpu.registers[DS];
@@ -109,6 +114,9 @@ int main(int argc, char *argv[]) {
   bool log = true;
 
   while (cpu.registers[IP] < Header.a_text) {
+    if (!cpu.running) {
+      break;
+    }
     uint32_t inst_addr = (cs_addr << 4) + cpu.registers[IP];
 
     instruction_info result_info = analyze_opcode(cpu.memory->data, inst_addr);
@@ -118,7 +126,7 @@ int main(int argc, char *argv[]) {
            << print_hex((uint16_t)(cpu.registers[IP]), 4) + ":";
       print_result(result_info);
     }
-    if (log) {
+    if (log && !dissassemble) {
       print_cpu_log(&cpu);
       print_result(result_info);
     }
@@ -127,11 +135,6 @@ int main(int argc, char *argv[]) {
       exec_parsed(&cpu, result_info);
     }
     cpu.registers[IP] += result_info.length;
-
-    if (!cpu.running) {
-      printf("BREAK\n");
-      break;
-    }
   }
 
   // printf("%04x", get_mem_16(&cpu, cpu.registers[SS], 0xffae));

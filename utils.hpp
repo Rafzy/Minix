@@ -25,6 +25,7 @@ void set_mem16(cpu_state_t *cpu, uint16_t segment, uint16_t offset,
 void push_stack(cpu_state_t *cpu, uint16_t value);
 uint16_t pop_stack(cpu_state_t *cpu);
 uint16_t get_mem_16(cpu_state_t *cpu, uint16_t segment, uint16_t offset);
+uint8_t get_mem_8(cpu_state_t *cpu, uint16_t segment, uint16_t offset);
 
 void print_cpu_log(cpu_state_t *cpu);
 #endif // !UTILS_H

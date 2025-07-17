@@ -151,6 +151,11 @@ uint16_t get_mem_16(cpu_state_t *cpu, uint16_t segment, uint16_t offset) {
   return le_16(cpu->memory->data, physical_addr);
 }
 
+uint8_t get_mem_8(cpu_state_t *cpu, uint16_t segment, uint16_t offset) {
+  uint32_t physical_addr = (segment << 4) + offset;
+  return cpu->memory->data[physical_addr];
+}
+
 // Debugging functions
 void print_cpu_state_header() {
   printf("AX   BX   CX   DX   SP   BP   SI   DI   FLAGS IP\n");

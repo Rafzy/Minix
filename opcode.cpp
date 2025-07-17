@@ -181,6 +181,10 @@ instruction_info analyze_opcode(uint8_t *byte, int offset) {
       result_info.mnemonic = "sbb";
       parse_rm_imm(&result_info, byte, offset);
     }
+    case 0x04: {
+      result_info.mnemonic = "and";
+      parse_rm_imm_no_s(&result_info, byte, offset);
+    }
     }
     break;
   }
@@ -324,10 +328,20 @@ instruction_info analyze_opcode(uint8_t *byte, int offset) {
     }
     break;
   }
+  case 0xfe:
   case 0xff: {
-    result_info.mnemonic = "push";
-    parse_rm(&result_info, byte, offset);
-    break;
+    switch ((byte[(offset) + 1] & 0x38) >> 3) {
+    case 0x00: {
+      result_info.mnemonic = "inc";
+      parse_rm(&result_info, byte, offset);
+      break;
+    }
+    case 0x06: {
+      result_info.mnemonic = "push";
+      parse_rm(&result_info, byte, offset);
+      break;
+    }
+    }
   }
   }
 
