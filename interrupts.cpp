@@ -26,8 +26,9 @@ void exec_int20(cpu_state_t *cpu) {
 
   cpu->registers[AX] = 0;
 
-  printf("MESSAGE: %04x %04x %04x %04x %04x %04x %04x %04x\n", msg.process_id,
-         msg.syscall_num, msg.m1, msg.m2, msg.m3, msg.m4, msg.m5, msg.m6);
+  // printf("MESSAGE: %04x %04x %04x %04x %04x %04x %04x %04x\n",
+  // msg.process_id,
+  //        msg.syscall_num, msg.m1, msg.m2, msg.m3, msg.m4, msg.m5, msg.m6);
   // Syscall cases
   switch (msg.syscall_num) {
   case 0x01: {

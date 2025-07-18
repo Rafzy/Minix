@@ -247,6 +247,8 @@ void exec_parsed(cpu_state_t *cpu, instruction_info &info) {
     exec_div(cpu, info.op1);
   } else if (info.mnemonic == "xchg") {
     exec_xchg(cpu, info.op1);
+  } else if (info.mnemonic == "sar") {
+    exec_sar(cpu, info.op1, info.op2);
   }
 
   else {
@@ -1162,8 +1164,78 @@ void exec_shl(cpu_state_t *cpu, string op1, string op2) {
 
     set_reg16(cpu, op1_index, result);
     return;
+  } else if (op1_type == REGISTER && REGISTER_LOW) {
+    uint8_t op1_index = parse_reg_name(op1);
+    uint8_t op2_index = parse_reg_name(op2);
+    uint16_t op1_val = get_reg16(cpu, op1_index);
+    uint16_t op2_val = get_reg8_l(cpu, op2_index);
+
+    uint16_t count = op2_val &= 0x1F;
+
+    if (count >= 16) {
+      cpu->registers[CF] = (count == 16) ? (op1_val & 0x8000) != 0 : 0;
+      cpu->registers[ZF] = 1;
+      cpu->registers[SF] = 0;
+      set_reg16(cpu, op1_index, 0);
+      return;
+    }
+
+    cpu->registers[CF] = (op1_val & (1 << (16 - count))) != 0;
+
+    result = op1_val << count;
+
+    cpu->registers[ZF] = (result == 0);
+    cpu->registers[SF] = (result & 0x80000) != 0;
+
+    set_reg16(cpu, op1_index, result);
+    return;
+
   } else {
     cpu->running = false;
+  }
+}
+
+void exec_sar(cpu_state_t *cpu, string op1, string op2) {
+  types op1_type = detect_type(op1);
+  types op2_type = detect_type(op2);
+  uint16_t result;
+
+  if (op1_type == REGISTER && op2_type == REGISTER_LOW) {
+    uint8_t op1_index = parse_reg_name(op1);
+    uint8_t op2_index = parse_reg_name(op2);
+    uint16_t op1_val = get_reg16(cpu, op1_index);
+    uint16_t op2_val = get_reg8_l(cpu, op2_index);
+
+    uint16_t count = op2_val & 0x1F;
+
+    if (count >= 16) {
+      if (op1_val & 0x8000) {
+        result = 0xFFFF;
+        cpu->registers[CF] = 1; // Last bit shifted out is 1
+        cpu->registers[ZF] = 0; // Result is not zero
+        cpu->registers[SF] = 1; // Sign bit is 1
+      } else {
+        // Positive number - fill with 0s
+        result = 0x0000;
+        cpu->registers[CF] = 0; // Last bit shifted out is 0
+        cpu->registers[ZF] = 1; // Result is zero
+        cpu->registers[SF] = 0; // Sign bit is 0
+      }
+      set_reg16(cpu, op1_index, result);
+      return;
+    }
+
+    if (count > 0) {
+      cpu->registers[CF] = (op1_val & (1 << (count - 1))) != 0;
+    }
+
+    int16_t signed_val = (int16_t)op1_val;
+    result = (uint16_t)(signed_val >> count);
+
+    cpu->registers[ZF] = (result == 0);
+    cpu->registers[SF] = (result & 0x8000) != 0;
+
+    set_reg16(cpu, op1_index, result);
   }
 }
 

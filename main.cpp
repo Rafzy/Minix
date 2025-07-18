@@ -111,7 +111,7 @@ int main(int argc, char *argv[]) {
   }
 
   bool dissassemble = false;
-  bool log = true;
+  bool log = false;
 
   while (cpu.registers[IP] < Header.a_text) {
     if (!cpu.running) {
