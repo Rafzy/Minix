@@ -9,7 +9,7 @@ void exec_int20(cpu_state_t *cpu) {
   uint16_t virt_addr = cpu->registers[BX];
 
   uint8_t segment;
-  (virt_addr > 0xff00) ? segment = SS : segment = DS;
+  (virt_addr > 0xf000) ? segment = SS : segment = DS;
 
   uint16_t data_segment = cpu->registers[segment];
   message_t msg;
@@ -26,22 +26,34 @@ void exec_int20(cpu_state_t *cpu) {
 
   cpu->registers[AX] = 0;
 
+  printf("MESSAGE: %04x %04x %04x %04x %04x %04x %04x %04x\n", msg.process_id,
+         msg.syscall_num, msg.m1, msg.m2, msg.m3, msg.m4, msg.m5, msg.m6);
   // Syscall cases
   switch (msg.syscall_num) {
-  case 1: {
+  case 0x01: {
     // TODO:
     // Do the syscall exit
     // printf("EXIT\n");
     cpu->running = false;
+    break;
   }
-  case 4: {
-    // printf("%04x %04x %04x %04x %04x %04x %04x %04x\n", msg.process_id,
-    //        msg.syscall_num, msg.m1, msg.m2, msg.m3, msg.m4, msg.m5, msg.m6);
-
+  case 0x04: {
     uint8_t segment;
-    msg.m4 > 0xff00 ? segment = SS : segment = DS;
+    msg.m4 > 0xf000 ? segment = SS : segment = DS;
     uint32_t write_addr = (cpu->registers[segment] << 4) + msg.m4;
     sys_write(write_addr, msg.m2, cpu->memory);
+    (cpu->registers[BX] + 2 > 0xf000) ? segment = SS : segment = DS;
+    set_mem16(cpu, cpu->registers[segment], cpu->registers[BX] + 2, msg.m2);
+    break;
+  }
+  case 0x11: {
+    printf("<EXECUTED BRK>\n");
+    sys_brk(cpu, msg.m4, 0);
+    break;
+  }
+  case 0x36: {
+    printf("<EXECUTED IOCTL>\n");
+    sys_ioctl(cpu);
     break;
   }
   default: {

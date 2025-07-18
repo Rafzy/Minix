@@ -61,6 +61,14 @@ instruction_info analyze_opcode(uint8_t *byte, int offset) {
     parse_mod_reg_rm(&result_info, byte, offset);
     break;
   }
+  case 0x28:
+  case 0x29:
+  case 0x2a:
+  case 0x2b: {
+    result_info.mnemonic = "sub";
+    parse_mod_reg_rm(&result_info, byte, offset);
+    break;
+  }
   case 0x2d: {
     result_info.mnemonic = "sub";
     parse_imm_acc(&result_info, byte, offset);
@@ -74,8 +82,19 @@ instruction_info analyze_opcode(uint8_t *byte, int offset) {
     parse_mod_reg_rm(&result_info, byte, offset);
     break;
   }
-  case 0x39: {
-    // TODO: continue
+  case 0x38:
+  case 0x39:
+  case 0x3a:
+  case 0x3b: {
+    result_info.mnemonic = "cmp";
+    parse_mod_reg_rm(&result_info, byte, offset);
+    break;
+  }
+  case 0x3c:
+  case 0x3d: {
+    result_info.mnemonic = "cmp";
+    parse_imm_acc(&result_info, byte, offset);
+    break;
   }
   case 0x40:
   case 0x41:
@@ -126,6 +145,11 @@ instruction_info analyze_opcode(uint8_t *byte, int offset) {
     parse_reg(&result_info, byte, offset);
     break;
   }
+  case 0x72: {
+    result_info.mnemonic = "jb";
+    parse_disp(&result_info, byte, offset);
+    break;
+  }
   case 0x73: {
     result_info.mnemonic = "jnb";
     parse_disp(&result_info, byte, offset);
@@ -141,6 +165,16 @@ instruction_info analyze_opcode(uint8_t *byte, int offset) {
     parse_disp(&result_info, byte, offset);
     break;
   }
+  case 0x76: {
+    result_info.mnemonic = "jbe";
+    parse_disp(&result_info, byte, offset);
+    break;
+  }
+  case 0x77: {
+    result_info.mnemonic = "jnbe";
+    parse_disp(&result_info, byte, offset);
+    break;
+  }
   case 0x7c: {
     result_info.mnemonic = "jl";
     parse_disp(&result_info, byte, offset);
@@ -148,6 +182,11 @@ instruction_info analyze_opcode(uint8_t *byte, int offset) {
   }
   case 0x7d: {
     result_info.mnemonic = "jnl";
+    parse_disp(&result_info, byte, offset);
+    break;
+  }
+  case 0x7e: {
+    result_info.mnemonic = "jle";
     parse_disp(&result_info, byte, offset);
     break;
   }
@@ -167,6 +206,11 @@ instruction_info analyze_opcode(uint8_t *byte, int offset) {
       parse_rm_imm(&result_info, byte, offset);
       break;
     }
+    case 0x01: {
+      result_info.mnemonic = "or";
+      parse_rm_imm_no_s(&result_info, byte, offset);
+      break;
+    }
     case 0x07: {
       result_info.mnemonic = "cmp";
       parse_rm_imm(&result_info, byte, offset);
@@ -180,12 +224,21 @@ instruction_info analyze_opcode(uint8_t *byte, int offset) {
     case 0x03: {
       result_info.mnemonic = "sbb";
       parse_rm_imm(&result_info, byte, offset);
+      break;
     }
     case 0x04: {
       result_info.mnemonic = "and";
       parse_rm_imm_no_s(&result_info, byte, offset);
+      break;
     }
     }
+    break;
+  }
+
+  case 0x84:
+  case 0x85: {
+    result_info.mnemonic = "test";
+    parse_mod_reg_rm_nod(&result_info, byte, offset);
     break;
   }
 
@@ -202,6 +255,18 @@ instruction_info analyze_opcode(uint8_t *byte, int offset) {
     // TODO: Fix this
     result_info.mnemonic = "lea";
     parse_mod_reg_rm_nodw(&result_info, byte, offset);
+    break;
+  }
+  case 0x90:
+  case 0x91:
+  case 0x92:
+  case 0x93:
+  case 0x94:
+  case 0x95:
+  case 0x96:
+  case 0x97: {
+    result_info.mnemonic = "xchg";
+    parse_reg(&result_info, byte, offset);
     break;
   }
   case 0x98: {
@@ -234,6 +299,11 @@ instruction_info analyze_opcode(uint8_t *byte, int offset) {
     parse_reg_imm(&result_info, byte, offset);
     break;
   }
+  case 0xc2: {
+    result_info.mnemonic = "ret";
+    parse_dir_with_seg(&result_info, byte, offset);
+    break;
+  }
   case 0xc3: {
     result_info.mnemonic = "ret";
     result_info.length = 1;
@@ -260,6 +330,11 @@ instruction_info analyze_opcode(uint8_t *byte, int offset) {
     switch ((byte[(offset) + 1] & 0x38) >> 3) {
     case 0x04: {
       result_info.mnemonic = "shl";
+      parse_rm_v(&result_info, byte, offset);
+      break;
+    }
+    case 0x07: {
+      result_info.mnemonic = "sar";
       parse_rm_v(&result_info, byte, offset);
       break;
     }
@@ -310,6 +385,11 @@ instruction_info analyze_opcode(uint8_t *byte, int offset) {
   case 0xf6:
   case 0xf7: {
     switch ((byte[(offset) + 1] & 0x38) >> 3) {
+    case 0x06: {
+      result_info.mnemonic = "div";
+      parse_rm(&result_info, byte, offset);
+      break;
+    }
     case 0x04: {
       result_info.mnemonic = "mul";
       parse_rm(&result_info, byte, offset);
@@ -336,9 +416,30 @@ instruction_info analyze_opcode(uint8_t *byte, int offset) {
       parse_rm(&result_info, byte, offset);
       break;
     }
+    case 0x01: {
+      result_info.mnemonic = "dec";
+      parse_rm(&result_info, byte, offset);
+      break;
+    }
+    case 0x04: {
+      result_info.mnemonic = "jmp";
+      parse_indir_w_seg(&result_info, byte, offset);
+      break;
+    }
+    case 0x05: {
+      result_info.mnemonic = "jmps";
+      printf("INDIR INTERSEGMENT\n");
+      parse_indir_w_seg(&result_info, byte, offset);
+      break;
+    }
     case 0x06: {
       result_info.mnemonic = "push";
       parse_rm(&result_info, byte, offset);
+      break;
+    }
+    case 0x02: {
+      result_info.mnemonic = "call";
+      parse_indir_w_seg(&result_info, byte, offset);
       break;
     }
     }

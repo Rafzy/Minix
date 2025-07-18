@@ -10,6 +10,9 @@ void parse_mod_reg_rm(instruction_info *info, uint8_t *byte, int offset);
 // XXXXXXXX mod|reg|r/m
 void parse_mod_reg_rm_nodw(instruction_info *info, uint8_t *byte, int offset);
 
+// XXXXXXXw mod|reg|r/m
+void parse_mod_reg_rm_nod(instruction_info *info, uint8_t *byte, int offset);
+
 // XXXXXreg
 void parse_reg_end(instruction_info *info, uint8_t *byte, int offset);
 
@@ -24,6 +27,10 @@ void parse_rm_imm_no_s(instruction_info *info, uint8_t *byte, int offset);
 
 // XXXXXXXX disp-low disp-high
 void parse_dir_w_seg(instruction_info *info, uint8_t *byte, int offset);
+void parse_dir_with_seg(instruction_info *info, uint8_t *byte, int offset);
+
+// XXXXXXXX mod|XXX|rm
+void parse_indir_w_seg(instruction_info *info, uint8_t *byte, int offset);
 
 // XXXXXXXX disp
 void parse_disp(instruction_info *info, uint8_t *byte, int offset);
