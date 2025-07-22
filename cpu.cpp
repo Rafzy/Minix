@@ -45,7 +45,7 @@ void init_stack(cpu_state_t *cpu, int argc, char **argv) {
     set_mem(cpu, ss_addr, cpu->registers[SP] + i, env[i]);
   }
 
-  for (int i = 0; i < argc; ++i) {
+  for (int i = argc - 1; i >= 0; --i) {
     int len = strlen(argv[i]) + 1;
     cpu->registers[SP] -= len;
 
