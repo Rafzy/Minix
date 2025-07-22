@@ -3,33 +3,17 @@
 #include "parser.hpp"
 #include "registers.hpp"
 #include "utils.hpp"
+#include <algorithm>
 #include <cstdint>
 #include <cstring>
 #include <iostream>
 
-// types detect_type(const string &name) {
-//   if (name[0] == '[' && name.back() == ']') {
-//     return MEMORY;
-//   } else if (name.find_first_not_of("0123456789ABCDEFabcdef") ==
-//   string::npos) {
-//     return IMMEDIATE;
-//   } else {
-//     return REGISTER;
-//   }
-// }
-
+using namespace std;
 types detect_type(const string &name) {
   if (name[0] == '[' && name.back() == ']') {
-    // Check if the memory reference contains 'L' or 'H'
-    // if (name.find('L') != string::npos) {
-    //   return MEMORY_LOW;
-    // } else if (name.find('H') != string::npos) {
-    //   return MEMORY_HIGH;
-    // } else {
-    //   return MEMORY;
-    // }
     return MEMORY;
-  } else if (name.find_first_not_of("0123456789ABCDEFabcdef") == string::npos) {
+  } else if (name.find_first_not_of("-0123456789ABCDEFabcdef") ==
+             string::npos) {
     return IMMEDIATE;
   } else {
     if (name.find('L') != string::npos) {
@@ -40,7 +24,6 @@ types detect_type(const string &name) {
 
       return REGISTER;
     }
-    // return REGISTER;
   }
 }
 
@@ -638,14 +621,25 @@ void exec_cmp(cpu_state_t *cpu, string op1, string op2) {
     uint16_t op1_index = parse_reg_name(op1);
     op1_val = get_reg16(cpu, op1_index);
     op2_val = parse_hex_string(op2);
-    int16_t op2_val_se = (int16_t)op2_val;
+    // int16_t op2_val_se = (int16_t)op2_val;
     // int16_t op2_val_se = (int8_t)op2_val;
     // printf("COMPARE SIGN EXTENDED : %d\n", op2_val_se);
 
-    (op1_val < op2_val_se) ? cpu->registers[CF] = 1 : cpu->registers[CF] = 0;
-    (op1_val - op2_val_se == 0) ? cpu->registers[ZF] = 1
-                                : cpu->registers[ZF] = 0;
-    int16_t result = op1_val - op2_val_se;
+    // if (op2[0] == '-') {
+    //   ((int16_t)op1_val < (int16_t)op2_val) ? cpu->registers[CF] = 1
+    //                                         : cpu->registers[CF] = 0;
+    //   ((int16_t)op1_val - (int16_t)op2_val == 0) ? cpu->registers[ZF] = 1
+    //                                              : cpu->registers[ZF] = 0;
+    //   int16_t result = (int16_t)op1_val - (int16_t)op2_val;
+    //   printf("CMP SUBTRACTION RESULT: %04x\n", result);
+    //   (result & 0x8000) != 0 ? cpu->registers[SF] = 1 : cpu->registers[SF] =
+    //   0; return;
+    // }
+
+    (op1_val < op2_val) ? cpu->registers[CF] = 1 : cpu->registers[CF] = 0;
+    (op1_val - op2_val == 0) ? cpu->registers[ZF] = 1 : cpu->registers[ZF] = 0;
+    uint16_t result = op1_val - op2_val;
+    // printf("CMP SUBTRACTION RESULT: %04x\n", result);
     (result & 0x8000) != 0 ? cpu->registers[SF] = 1 : cpu->registers[SF] = 0;
     return;
   }
@@ -657,10 +651,13 @@ void exec_cmp(cpu_state_t *cpu, string op1, string op2) {
     (mem_op1 > 0xf000) ? segment = SS : segment = DS;
 
     op2_val = parse_hex_string(op2);
-    op1_val = get_mem_16(cpu, cpu->registers[segment], mem_op1);
+    if (op2.length() == 2) {
+      op1_val = get_mem_8(cpu, cpu->registers[segment], mem_op1);
+    } else {
 
-    // printf("CMP MEM VAL ADDRESS: %04x\n", mem_op1);
-    // printf("CMP MEM VAL: %04x\n", op1_val);
+      op1_val = get_mem_16(cpu, cpu->registers[segment], mem_op1);
+    }
+
   }
 
   else if (op1_type == MEMORY && op2_type == REGISTER) {

@@ -164,7 +164,6 @@ void parse_rm_imm(instruction_info *info, uint8_t *byte, int offset) {
   uint8_t rm = (opcode_2 & 0x07);
   string rm_name;
   uint16_t data;
-
   if (mod == 0x03) {
     rm_name = reg_table[w][rm];
   } else if (mod == 0x00) {
@@ -191,19 +190,33 @@ void parse_rm_imm(instruction_info *info, uint8_t *byte, int offset) {
     data = le_16(byte, offset + info->length);
     info->length += 2;
 
+    string data_string;
+    data_string = print_hex(data, 4);
+    info->op1 = rm_name;
+    info->op2 = data_string;
+    return;
   }
   // TODO: handle sign extend
-  // else if (sw == 0x03) {
-  //   int8_t data = abs((int8_t)byte[offset + info->length]);
-  //
-  // }
-  else {
+  else if (sw == 0x03) {
+    string data_string;
+    int8_t data = (int8_t)byte[offset + info->length];
+    if (data < 0) {
+      data_string = "-" + print_hex(abs(data), 1);
+    } else {
+      data_string = print_hex(abs(data), 1);
+    }
+    info->length += 1;
+    info->op1 = rm_name;
+    info->op2 = data_string;
+    return;
+
+  } else {
     data = byte[offset + info->length];
     info->length += 1;
   }
 
   info->op1 = rm_name;
-  info->op2 = print_hex(data, 1);
+  info->op2 = print_hex(data, 2);
 }
 
 void parse_rm_imm_no_s(instruction_info *info, uint8_t *byte, int offset) {
@@ -360,6 +373,7 @@ void parse_imm_acc(instruction_info *info, uint8_t *byte, int offset) {
     info->length += 1;
   }
   info->op1 = reg_table[1][0];
+  // info->op2 = (data < 0 ? "-" : "") + print_hex(abs(data), 4);
   info->op2 = print_hex(data, 4);
 }
 

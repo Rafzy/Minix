@@ -48,12 +48,12 @@ void exec_int20(cpu_state_t *cpu) {
     break;
   }
   case 0x11: {
-    printf("<EXECUTED BRK>\n");
+    // printf("<EXECUTED BRK>\n");
     sys_brk(cpu, msg.m4, 0);
     break;
   }
   case 0x36: {
-    printf("<EXECUTED IOCTL>\n");
+    // printf("<EXECUTED IOCTL>\n");
     sys_ioctl(cpu);
     break;
   }
